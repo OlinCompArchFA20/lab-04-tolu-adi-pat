@@ -14,8 +14,8 @@ use instruction memory for processor memory???
 can alu be behavioral?
 should our decode be
 - Unconditionally setting values of rs rt, imm addr etc
-- and to set the ALU op code just a ton of muxing that looks for the assembly command? 
-
+- and to set the ALU op code just a ton of muxing that looks for the assembly command?
+control bits??? 
 */
 
 module SINGLE_CYCLE_CPU
@@ -93,7 +93,7 @@ module SINGLE_CYCLE_CPU
 
 
    // initializing processor components
-   REGFILE processor_register(.clk(clk),.rst(rst),.wren(writeRegEnable),.wa(rgdst),.wd(dataToWrite), .ra1(rd),.ra2(rt),.rd1(dataA),.rd2(dataB));
+   // REGFILE processor_register(.clk(clk),.rst(rst),.wren(writeRegEnable),.wa(rgdst),.wd(dataToWrite), .ra1(rd),.ra2(rt),.rd1(dataA),.rd2(dataB));
    ALU processor_ALU(.alu_op(alu_opcode),.A(dataA),.B(ALU_in), .R(ALU_out),.overflow(overflow),.isZero(isZero));
    MEMORY processor_memory(.clk(clk),.rst(rst),.PC(PC),.instruction(instruction), .mem_cmd(mem_cmd),.data_in(data_in),.data_addr(data_addr),.data_out(mem_out));
 

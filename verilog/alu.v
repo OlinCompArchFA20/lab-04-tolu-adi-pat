@@ -19,15 +19,17 @@ module ALU
 
   always @* begin
     case(alu_op)
-    `OP_ZERO: begin R = A+B end // add
-    `OP_TWO: begin R = A-B end // sub TODO: need assign?
-    `OP_THREE: begin R = A ^ B end // XOR
-    `OP_FOUR: begin R = A < B end // SLT
-    `OP_FIVE: begin R = A & B end // AND
-    `OP_SIX: begin R= ~(A & B) end // NAND
-    `OP_SEVEN: begin R = A ~| B end // NOR
-    `OP_EIGHT: begin R = A || B end // OR
-    `OP_NINE: begin R = A * B end
+    `F_ADD: begin R = A+B end // add
+    `F_ADDU: begin R = A+B end // add unsigned
+
+    // `OP_TWO: begin R = A-B end // sub TODO: need assign?
+    // `OP_THREE: begin R = A ^ B end // XOR
+    // `OP_FOUR: begin R = A < B end // SLT
+    // `OP_FIVE: begin R = A & B end // AND
+    // `OP_SIX: begin R= ~(A & B) end // NAND
+    // `OP_SEVEN: begin R = A ~| B end // NOR
+    // `OP_EIGHT: begin R = A || B end // OR
+    // `OP_NINE: begin R = A * B end
     default: ;
     endcase
     end

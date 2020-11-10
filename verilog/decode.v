@@ -46,18 +46,20 @@ module DECODE
     case(inst[`FLD_OPCODE]) // evaluating op codes
       `OP_ZERO: begin // if the opcode is 0
         case (inst[`FLD_FUNCT]) // evaluating functs within opcode = 0
-          `SLL: begin wa = rs << 1'b0; end
-          `SRL: begin wa = rs >> 1'b0; end // 2
-          `ADD: begin alu_op=1'b0;  end
-          `ADD: begin wa = rs + rt; end
-          `ADDU: begin wa = rs + rt; end
-          `SUB: begin wa = rs - rt; end
-          `SUBU: begin wa = rs - rt; end
-          `AND: begin wa = rs && rt; end
-          `OR: begin wa = rs || rt; end
-          `NOR: begin wa = rs ~| rt; end
-          `SLT: begin wa = rs < rt; end
-          `SLTU: begin wa = rs < rt; end
+          `F_ADD: begin alu_op=`F_ADD;  end
+          `F_ADDU: begin alu_op=`F_ADDU end
+          
+          // `SLL: begin wa = rs << 1'b0; end
+          // `SRL: begin wa = rs >> 1'b0; end // 2
+          // `ADD: begin wa = rs + rt; end
+          // `ADDU: begin wa = rs + rt; end
+          // `SUB: begin wa = rs - rt; end
+          // `SUBU: begin wa = rs - rt; end
+          // `AND: begin wa = rs && rt; end
+          // `OR: begin wa = rs || rt; end
+          // `NOR: begin wa = rs ~| rt; end
+          // `SLT: begin wa = rs < rt; end
+          // `SLTU: begin wa = rs < rt; end
           default: /* default catch */;
         endcase
       end
