@@ -6,6 +6,14 @@
 
 `timescale 1ns / 1ps
 
+
+/*
+Questions: TODO:
+pc_src?
+use instruction memory for processor memory??? 
+
+*/
+
 module SINGLE_CYCLE_CPU
   (input clk,
    input rst);
@@ -15,25 +23,32 @@ module SINGLE_CYCLE_CPU
    // PC Wires
    wire PC; // program counter wire
    wire [W_CPU-1:0] data_in;
-   wire  [W_CPU-1:0] data_addr;
+   wire [W_CPU-1:0] data_addr;
    wire [W_CPU-1:0]  data_out;
    wire jump;
    wire branch;
-   wire PC_new;//updated PC after 4 is added
-   wire[W_CPU-6:0] branchmuxinput;//wire to jump mux; adds nothing and lets PC+4+), or adds PC+4+branch
+
+   wire PC_branch_handled;//PC after branch has been factored and 4 is added
+   wire[W_CPU-6:0] branchmuxoutput;//wire to jump mux out of branch; adds nothing and lets PC+4+0, or adds PC+4+branch
+
 
 
    // decode wires
    wire [W_IMM-1:0] imm;
+   wire [W_IMM_EXT-1:0] imm_ext;
    wire [W_OPCODE-1:0] alu_opcode;
    wire [W_CPU-1:0] instruction; // your 32 bit wide instruction that comes out of memory
+   wire rgdst;
+
+
 
    // processor Register wires
    wire writeRegEnable; // from decode, enables register write
    wire [W_CPU-1:0] dataToWrite; // from mux (either value from memory or ALU)
    wire [W_REG-1:0] rd; // register destination
    wire [W_REG-1:0] rt; // register input/dest t
-   wire [W_CPU-1:0] dataA; // data in register A
+   wire [W_REG-1:0] rs; // register input/dest t
+   wire [W_CPU-1:0] dataA; // data in register A and 1st  alu input
    wire [W_CPU-1:0] dataB; // data in register B
    wire [W_REG-1:0] addressA; //address of register A
    wire [W_REG-1:0] addressB; // address of register B
@@ -46,26 +61,29 @@ module SINGLE_CYCLE_CPU
    wire isZero; // used for JLT calculations
    wire alu_src; // from decode, picks between ALU inputs
    wire [W_CPU-1:0] ALU_in; // 2nd alu input
+   wire overflow; //used to detect overflow
+
 
 
 
    // processor MEMORY wires
    wire [W_CPU-1:0] mem_out; // alu result
-   wire  [W_MEM_CMD-1:0] mem_cmd;
+   wire [W_MEM_CMD-1:0] mem_cmd;
 
 
 
 
    // initializing PC and instruction components
    MEMORY instruction_memory(.clk(clk),.rst(rst),.PC(PC),.instruction(instruction), .mem_cmd(mem_cmd),.data_in(data_in),.data_addr(data_addr),.data_out(data_out));
-   DECODE instruction_decode(.inst(), .wa(), .ra1(), .ra2(), .reg_wen(writeRegEnable), .imm_ext(), .imm(immediate), .addr(), .alu_op(alu_opcode),.pc_src(), .mem_cmd(), .alu_src(alu_src), .reg_src());
-   ALU jump_ALU(.alu_op(0),.A(PC),.B(1'd4), .R(PC_new),.overflow(),.isZero()); // add 4 every PC increment
+   DECODE instruction_decode(.inst(instruction), .wa(Aw), .ra1(rs), .ra2(rt), .reg_wen(writeRegEnable), .imm_ext(imm_ext), .imm(immediate), .addr(), .alu_op(alu_opcode),.pc_src(pc_src), .mem_cmd(mem_cmd), .alu_src(alu_src), .reg_src(memToReg));
+   FETCH instruction_fetch(.clk(clk), .rst(rst), .pc_src(pc_src), .branch_ctrl(branch_mux_select), .reg_addr(), .jump_addr(), .imm_addr(), .pc_next(pc_next));
 
 
    // initializing processor components
-   REGFILE processor_register(.clk(clk),.rst(rst),.wren(writeRegEnable),.wa(),.wd(), .ra1(),.ra2(),.rd1(),.rd2());
-   ALU processor_ALU(.alu_op(alu_opcode),.A(),.B(), .R(ALU_out),.overflow(),.isZero(isZero));
-   MEMORY processor_memory(.clk(clk),.rst(rst),.PC(),.instruction(), .mem_cmd(),.data_in(),.data_addr(),.data_out());
+   REGFILE processor_register(.clk(clk),.rst(rst),.wren(writeRegEnable),.wa(rgdst),.wd(dataToWrite), .ra1(rd),.ra2(rt),.rd1(dataA),.rd2(dataB));
+   ALU processor_ALU(.alu_op(alu_opcode),.A(dataA),.B(ALU_in), .R(ALU_out),.overflow(overflow),.isZero(isZero));
+   MEMORY processor_memory(.clk(clk),.rst(rst),.PC(PC),.instruction(instruction), .mem_cmd(mem_cmd),.data_in(data_in),.data_addr(data_addr),.data_out(mem_out));
+
 
 
 
@@ -86,33 +104,34 @@ module SINGLE_CYCLE_CPU
      end
 
      always @* begin
-      case (rgdst)//MUX for reg destination
-        `RdintoAw: begin Aw = rd end
-        `RtintoAw: begin Aw = rt end
+      case (rgdst)//MUX to set destination register for processor regfile
+        `RdintoAw: begin Aw = rd end // if rgdst is 0
+        `RtintoAw: begin Aw = rt end //
         default: ;
       endcase
       end
 
+      //and gate for zero output ALU to branch
+      nand #5 nandbranch(branch_mux_select_nand, isZero, branch);
+      not #5 notbranch(branch_mux_select,branch_mux_select_nand);
+
       always @* begin
-       case (branch)//MUX for branch
-         `nothingaddedtoPC: begin PC = PC_new end// PC updates
-         `insttargetisPC: begin PC = instruction(25:0) end
+       case (branch_mux_select)//MUX for branch
+         `nothingaddedtoPC: begin branchmuxoutput = 1'b0// PC updates
+         `addbranchaddresstoPC: begin branchmuxoutput= immediate end
          default: ;
        endcase
        end
 
+      PC_branch_handled = 1'd4 + branchmuxoutput + PC ;//update PC
+
       always @* begin
-       case (jump)//MUX for jump
-         `PCnewisPC: begin PC = PC_new end// PC updates
-         `insttargetisPC: begin PC = branchmuxinput end
+       case (jump)//MUX for jump and finalize update to PC
+         `PCnewisPC: begin PC = PC_branch_handled end// PC updates
+         `insttargetisPC: begin PC = instruction[W_CPU-6:0] end
          default: ;
        endcase
        end
-
-
-
-
-
 
 
   //SYSCALL Catch

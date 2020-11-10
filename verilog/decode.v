@@ -43,11 +43,12 @@ module DECODE
 
 
   always @* begin
-    case(inst[`FLD_OPCODE])
-      `OP_ZERO: begin
-        case (Ctrl)
-          `SLL: begin wa = rs << 1'b0; end // 0
+    case(inst[`FLD_OPCODE]) // evaluating op codes
+      `OP_ZERO: begin // if the opcode is 0
+        case (inst[`FLD_FUNCT]) // evaluating functs within opcode = 0
+          `SLL: begin wa = rs << 1'b0; end
           `SRL: begin wa = rs >> 1'b0; end // 2
+          `ADD: begin alu_op=1'b0;  end
           `ADD: begin wa = rs + rt; end
           `ADDU: begin wa = rs + rt; end
           `SUB: begin wa = rs - rt; end
@@ -60,9 +61,9 @@ module DECODE
           default: /* default catch */;
         endcase
       end
-      `OP_ONE: begin end
-      `ADDI: begin wa = rs + imm; end
-      `ADDIU: begin wa = rs + imm; end
+      `OP_ONE: begin end // for opcode 1
+      `OP_TWO: begin wa = rs + imm; end // for opcode 2
+      `OP_THREE: begin wa = rs + imm; end // for opcode 3
       `ANDI: begin wa = rs && imm; end
       `ORI: begin wa = rs || imm; end
       `SLTI: begin wa = rs < imm; end
