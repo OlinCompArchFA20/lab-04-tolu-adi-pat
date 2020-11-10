@@ -10,7 +10,11 @@
 /*
 Questions: TODO:
 pc_src?
-use instruction memory for processor memory??? 
+use instruction memory for processor memory???
+can alu be behavioral?
+should our decode be
+- Unconditionally setting values of rs rt, imm addr etc
+- and to set the ALU op code just a ton of muxing that looks for the assembly command? 
 
 */
 
@@ -20,16 +24,24 @@ module SINGLE_CYCLE_CPU
 
    // start at a high lvl block diagram Here
 
-   // PC Wires
+   // PC FETCH Wires
    wire PC; // program counter wire
    wire [W_CPU-1:0] data_in;
    wire [W_CPU-1:0] data_addr;
    wire [W_CPU-1:0]  data_out;
-   wire jump;
-   wire branch;
-
+   //wire jump;//pcsrc is jump
+   wire [`W_EN-1:0] branch;
    wire PC_branch_handled;//PC after branch has been factored and 4 is added
    wire[W_CPU-6:0] branchmuxoutput;//wire to jump mux out of branch; adds nothing and lets PC+4+0, or adds PC+4+branch
+   wire[W_PC_SRC-1:0] pc_src;// mux for jump select
+  wire [W_CPU-1:0] reg_addr;
+  wire [W_JADDR-1:0] jump_addr;//target address
+  wire  [W_IMM-1:0] imm_addr;//imm address for branching
+  wire [W_CPU-1:0] pc_next;//next pc value
+
+
+
+
 
 
 
@@ -38,7 +50,7 @@ module SINGLE_CYCLE_CPU
    wire [W_IMM_EXT-1:0] imm_ext;
    wire [W_OPCODE-1:0] alu_opcode;
    wire [W_CPU-1:0] instruction; // your 32 bit wide instruction that comes out of memory
-   wire rgdst;
+  // wire rgdst;
 
 
 
@@ -53,6 +65,7 @@ module SINGLE_CYCLE_CPU
    wire [W_REG-1:0] addressA; //address of register A
    wire [W_REG-1:0] addressB; // address of register B
    wire [W_REG-1:0] Aw; //write address
+   wire [W_MEM_CMD-1:0] mem_cmd;//chooses rt or rd?? instead of rgdst
 
 
 
@@ -68,7 +81,7 @@ module SINGLE_CYCLE_CPU
 
    // processor MEMORY wires
    wire [W_CPU-1:0] mem_out; // alu result
-   wire [W_MEM_CMD-1:0] mem_cmd;
+
 
 
 
@@ -76,7 +89,7 @@ module SINGLE_CYCLE_CPU
    // initializing PC and instruction components
    MEMORY instruction_memory(.clk(clk),.rst(rst),.PC(PC),.instruction(instruction), .mem_cmd(mem_cmd),.data_in(data_in),.data_addr(data_addr),.data_out(data_out));
    DECODE instruction_decode(.inst(instruction), .wa(Aw), .ra1(rs), .ra2(rt), .reg_wen(writeRegEnable), .imm_ext(imm_ext), .imm(immediate), .addr(), .alu_op(alu_opcode),.pc_src(pc_src), .mem_cmd(mem_cmd), .alu_src(alu_src), .reg_src(memToReg));
-   FETCH instruction_fetch(.clk(clk), .rst(rst), .pc_src(pc_src), .branch_ctrl(branch_mux_select), .reg_addr(), .jump_addr(), .imm_addr(), .pc_next(pc_next));
+   FETCH instruction_fetch(.clk(clk), .rst(rst), .pc_src(pc_src), .branch_ctrl(branch_ctrl), .reg_addr(reg_addr), .jump_addr(jump_addr), .imm_addr(imm_addr), .pc_next(pc_next));
 
 
    // initializing processor components
@@ -104,7 +117,7 @@ module SINGLE_CYCLE_CPU
      end
 
      always @* begin
-      case (rgdst)//MUX to set destination register for processor regfile
+      case (mem_cmd)//MUX to set destination register for processor regfile
         `RdintoAw: begin Aw = rd end // if rgdst is 0
         `RtintoAw: begin Aw = rt end //
         default: ;
@@ -113,20 +126,20 @@ module SINGLE_CYCLE_CPU
 
       //and gate for zero output ALU to branch
       nand #5 nandbranch(branch_mux_select_nand, isZero, branch);
-      not #5 notbranch(branch_mux_select,branch_mux_select_nand);
+      not #5 notbranch(branch_ctrl,branch_mux_select_nand);
 
       always @* begin
-       case (branch_mux_select)//MUX for branch
+       case (branch_ctrl)//MUX for branch
          `nothingaddedtoPC: begin branchmuxoutput = 1'b0// PC updates
          `addbranchaddresstoPC: begin branchmuxoutput= immediate end
          default: ;
        endcase
        end
 
-      PC_branch_handled = 1'd4 + branchmuxoutput + PC ;//update PC
+    //  PC_branch_handled = 1'd4 + branchmuxoutput + PC ;//update PC
 
       always @* begin
-       case (jump)//MUX for jump and finalize update to PC
+       case (pc_src)//MUX for jump and finalize update to PC
          `PCnewisPC: begin PC = PC_branch_handled end// PC updates
          `insttargetisPC: begin PC = instruction[W_CPU-6:0] end
          default: ;
