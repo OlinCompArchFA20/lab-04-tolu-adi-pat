@@ -1,6 +1,3 @@
-`include "rumx.v"
-`include "jumx.v"
-`include "iumx.v"
 `include "lib/opcodes.v"
 `include "lib/debug.v"
 `timescale 1ns / 1 ps
@@ -45,82 +42,31 @@ module DECODE
   end
 
 
-  // r-MUX
-  // Update 1'b0 to the appropriate wire from above
-  always @* begin
-    case (Ctrl)
-      `sll_:  begin wa = ra1 << 1'b0; end // 0
-      `none: begin end // 1
-      `srl_:  begin wa = ra1 >> 1'b0; end // 2
-      `sra_:  begin end
-      `sllv_:  begin end
-      `srlv_:  begin end
-      `srav_: begin end
-      `jr_:  begin end
-      `jalr_:   begin end
-      `syscall_:  begin end
-      `mfhi_:  begin end
-      `mthi_:  begin end
-      `mflo_:  begin end
-      `mult_:  begin end
-      `multu_: begin end
-      `div_:  begin end
-      `divu_:   begin end
-      `add_:  begin wa = ra1 + ra2; end
-      `addu_:  begin wa = ra1 + ra2; end
-      `sub_:  begin wa = ra1 - ra2; end
-      `subu_:  begin wa = ra1 - ra2; end
-      `and_:  begin wa = ra1 && ra2; end
-      `or_: begin wa = ra1 || ra2; end
-      `xor_:  begin wa = ra1 ^ ra2; end
-      `nor_:   begin wa = ra1 ~| ra2; end
-      `slt_:   begin wa = ra1 < ra2; end
-      `sltu_:   begin wa = ra1 < ra2; end
-      default: /* default catch */;
-    endcase
-  end
-
-  // j-MUX
-  // Update 1'b0 to the appropriate wire from above
-  always @* begin
-    case (Ctrl)
-      `j_:  begin end
-      `jal_:  begin end
-      default: /* default catch */;
-    endcase
-  end
-
-  // i-MUX
-  // Update 1'b0 to the appropriate wire from above
-  always @* begin
-    case (Ctrl)
-      `beq_:  begin end
-      `bne_:  begin end
-      `blez_:  begin end
-      `bgtz_:  begin end
-      `addi_:  begin wa = ra1 + imm; end
-      `addiu_: begin wa = ra1 + imm; end
-      `slti_:  begin wa = ra1 < imm; end
-      `sltiu_:   begin wa = ra1 < imm; end
-      `andi_:  begin wa = ra1 && imm; end
-      `ori_:  begin wa = ra1 || imm; end
-      `xori_:  begin wa = ra1 ^ imm; end
-      `lui_:  begin end
-      `lb_:  begin end
-      `lh_: begin end
-      `lw_:  begin end
-      `lbu_:   begin end
-      `lhu_:  begin end
-      `sb_:  begin end
-      `sh_:  begin end
-      `sw_:  begin end
-      default: /* default catch */;
-    endcase
-  end
-
-
   always @* begin
     case(inst[`FLD_OPCODE])
+      `OP_ZERO: begin
+        case (Ctrl)
+          `SLL: begin wa = rs << 1'b0; end // 0
+          `SRL: begin wa = rs >> 1'b0; end // 2
+          `ADD: begin wa = rs + rt; end
+          `ADDU: begin wa = rs + rt; end
+          `SUB: begin wa = rs - rt; end
+          `SUBU: begin wa = rs - rt; end
+          `AND: begin wa = rs && rt; end
+          `OR: begin wa = rs || rt; end
+          `NOR: begin wa = rs ~| rt; end
+          `SLT: begin wa = rs < rt; end
+          `SLTU: begin wa = rs < rt; end
+          default: /* default catch */;
+        endcase
+      end
+      `OP_ONE: begin end
+      `ADDI: begin wa = rs + imm; end
+      `ADDIU: begin wa = rs + imm; end
+      `ANDI: begin wa = rs && imm; end
+      `ORI: begin wa = rs || imm; end
+      `SLTI: begin wa = rs < imm; end
+      `SLTIU: begin wa = rs < imm; end
       // Here be dragons.
       // @@@@@@@@@@@@@@@@@@@@@**^^""~~~"^@@^*@*@@**@@@@@@@@@
       // @@@@@@@@@@@@@*^^'"~   , - ' '; ,@@b. '  -e@@@@@@@@@
