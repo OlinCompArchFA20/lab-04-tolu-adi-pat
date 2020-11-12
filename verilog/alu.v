@@ -16,140 +16,38 @@ module ALU
 
   assign carry[0] = 1'b0;
 
-
+  // behavioral ALU
   always @* begin
     case(alu_op)
-    `F_ADD: begin R = A+B end // add
-    `F_ADDU // add unsigned
-    `include "lib/opcodes.v"
-    `timescale 1ns / 1ps
-
-    module ALU
-     (input      [`W_OPCODE-1:0]  alu_op,
-      input      [`W_CPU-1:0]     A,
-      input      [`W_CPU-1:0]     B,
-      output reg [`W_CPU-1:0]     R,
-      output reg overflow, // 1 if overflow, 0 if not
-      output reg isZero);
-
-      // insert alu slice Here
-
-      wire [W:0]   carry;
-      wire [W-1:0] result;
-
-      assign carry[0] = 1'b0;
-
-      // behavioral ALU
-      always @* begin
-        case(alu_op)
-        `F_ADD: begin R = A+B end // add
-        `F_ADDU: begin R = A+B end // add unsigned
-        `F_AND: begin R = A & B end
-        `F_NOR: begin R = A ~| B end
-        `F_OR: begin R = A || B  end
-        `F_SLT: begin  R = A < B end
-        `F_SLTU: begin R = A < B end
-        `F_SUBU: begin R = A - B end
-        `F_SUB: begin R = A - B end
-        `F_XOR: begin R = A ^ B end
-        `F_SLL: begin end
-        `F_SLLV: begin end
-        `F_SRA: begin end
-        `F_SRAV: begin end
-        `F_SRL: begin end
-        `F_SRLV: begin end
-        `F_DIV: begin end
-        `F_DIVU: begin end
-        `F_MFHI: begin end
-        `F_MFLO: begin end
-        `F_MTHI: begin end
-        `F_MTLO: begin end
-        `F_MULT: begin end
-        `F_MULTU: begin end
-        `F_BREAK: begin end
-        `F_JALR: begin end
-        `F_JR: begin end
-        `F_SYSCAL: begin end
-
-        // `OP_TWO: begin R = A-B end // sub TODO: need assign?
-        // `OP_THREE: begin R = A ^ B end // XOR
-        // `OP_FOUR: begin R = A < B end // SLT
-        // `OP_FIVE: begin R = A & B end // AND
-        // `OP_SIX: begin R= ~(A & B) end // NAND
-        // `OP_SEVEN: begin R = A ~| B end // NOR
-        // `OP_EIGHT: begin R = A || B end // OR
-        // `OP_NINE: begin R = A * B end
-        default: ;
-        endcase
-        end
-      endmodule
-
-    //       case (Ctrl)
-    //         `SLL: begin R = A << 1'b0; end // 0
-    //         `SRL: begin R = A >> 1'b0; end // 2
-    //         `ADD: begin R = A + B; end
-    //         `ADDU: begin R = A + B; end
-    //         `SUB: begin R = A - B; end
-    //         `SUBU: begin R = A - B; end
-    //         `AND: begin R = A && B; end
-    //         `OR: begin R = A || B; end
-    //         `NOR: begin R = A ~| B; end
-    //         `SLT: begin R = A < B; end
-    //         `SLTU: begin R = A < B; end
-    //         default: /* default catch */;
-    //       endcase
-    //     end
-    //     `OP_ONE: begin end
-    //     `ADDI: begin R = A + B; end
-    //     `ADDIU: begin R = A + B; end
-    //     `ANDI: begin R = A && B; end
-    //     `ORI: begin R = A || B; end
-    //     `SLTI: begin R = A < B; end
-    //     `SLTIU: begin R = A < B; end
-    //     default : ;
-    //     endcase
-    //   end
-    //
-    // endmodule
-
-
-    // `OP_TWO: begin R = A-B end // sub TODO: need assign?
-    // `OP_THREE: begin R = A ^ B end // XOR
-    // `OP_FOUR: begin R = A < B end // SLT
-    // `OP_FIVE: begin R = A & B end // AND
-    // `OP_SIX: begin R= ~(A & B) end // NAND
-    // `OP_SEVEN: begin R = A ~| B end // NOR
-    // `OP_EIGHT: begin R = A || B end // OR
-    // `OP_NINE: begin R = A * B end
+    `F_ADD: begin R = A + B; end // add
+    `F_ADDU: begin R = A + B; end // add unsigned
+    `F_AND: begin R = A & B; end
+    `F_NOR: begin R = A ~| B; end
+    `F_OR: begin R = A || B;  end
+    `F_SLT: begin  R = A < B; end
+    `F_SLTU: begin R = A < B; end
+    `F_SUBU: begin R = A - B; end
+    `F_SUB: begin R = A - B; end
+    `F_XOR: begin R = A ^ B; end
+    `F_SLL: begin R = A << B; end // TODO: shiftamount wya?
+    `F_SLLV: begin R = A << B; end
+    `F_SRA: begin R = A >> B; end // TODO: shiftamount wya?
+    `F_SRAV: begin R = A >> B; end
+    `F_SRL: begin R = A >> B; end // TODO: shiftamount wya?
+    `F_SRLV: begin R = A >> B; end
+    `F_DIV: begin R = A / B; end
+    `F_DIVU: begin R = A / B; end
+    //`F_MFHI: begin end
+    //`F_MFLO: begin end
+    //`F_MTHI: begin end
+    //`F_MTLO: begin end
+    `F_MULT: begin R = A * B; end
+    `F_MULTU: begin R = A * B; end
+    //`F_BREAK: begin end
+    //`F_JALR: begin end
+    //`F_JR: begin end
+    //`F_SYSCAL: begin end
     default: ;
     endcase
     end
-  endmodule
-
-//       case (Ctrl)
-//         `SLL: begin R = A << 1'b0; end // 0
-//         `SRL: begin R = A >> 1'b0; end // 2
-//         `ADD: begin R = A + B; end
-//         `ADDU: begin R = A + B; end
-//         `SUB: begin R = A - B; end
-//         `SUBU: begin R = A - B; end
-//         `AND: begin R = A && B; end
-//         `OR: begin R = A || B; end
-//         `NOR: begin R = A ~| B; end
-//         `SLT: begin R = A < B; end
-//         `SLTU: begin R = A < B; end
-//         default: /* default catch */;
-//       endcase
-//     end
-//     `OP_ONE: begin end
-//     `ADDI: begin R = A + B; end
-//     `ADDIU: begin R = A + B; end
-//     `ANDI: begin R = A && B; end
-//     `ORI: begin R = A || B; end
-//     `SLTI: begin R = A < B; end
-//     `SLTIU: begin R = A < B; end
-//     default : ;
-//     endcase
-//   end
-//
-// endmodule
+endmodule

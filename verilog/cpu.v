@@ -53,6 +53,7 @@ module SINGLE_CYCLE_CPU
    wire [W_IMM_EXT-1:0] imm_ext;
    wire [W_OPCODE-1:0] alu_opcode;
    wire [W_CPU-1:0] instruction; // your 32 bit wide instruction that comes out of memory
+   wire [W_REG-1:0] rg_dst;//register destination
 
 
 
@@ -67,7 +68,6 @@ module SINGLE_CYCLE_CPU
    wire [W_REG-1:0] addressA; //address of register A
    wire [W_REG-1:0] addressB; // address of register B
    wire [W_REG-1:0] Aw; //write address
-   wire rg_dst;//register destination
    wire [W_MEM_CMD-1:0] mem_cmd; // chooses to write to processor memory or not
 
 
@@ -84,7 +84,7 @@ module SINGLE_CYCLE_CPU
 
 
    // initializing PC and instruction components
-   DECODE instruction_decode(.inst(instruction), .wa(Aw), .ra1(rs), .ra2(rt), .reg_wen(writeRegEnable), .imm_ext(imm_ext), .imm(immediate), .addr(addr), .alu_op(alu_opcode),.pc_src(pc_src), .mem_cmd(mem_cmd), .alu_src(alu_src), .reg_src(memToReg));
+   DECODE instruction_decode(.inst(instruction), .wa(rg_dst), .ra1(rs), .ra2(rt), .reg_wen(writeRegEnable), .imm_ext(imm_ext), .imm(immediate), .addr(addr), .alu_op(alu_opcode),.pc_src(pc_src), .mem_cmd(mem_cmd), .alu_src(alu_src), .reg_src(memToReg));
    FETCH instruction_fetch(.clk(clk), .rst(rst), .pc_src(pc_src), .branch_ctrl(branch_ctrl), .reg_addr(reg_addr), .jump_addr(jump_addr), .imm_addr(imm_addr), .pc_next(pc_next));
 
    // this memory serves as both instruction and processor memory

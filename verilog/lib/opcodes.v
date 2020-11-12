@@ -29,11 +29,17 @@
   `define W_REG_SRC    2
   `define W_MEM_CMD    2
   `define W_WORD       2
-  `define W_RG_DST     2
+
 
   // Lots of MUX and Enable Defines
   `define WREN         `W_EN'b1
   `define WDIS         `W_EN'b0
+
+
+  `define PC_SRC_NEXT  `W_PC_SRC'd0
+  `define PC_SRC_JUMP  `W_PC_SRC'd1
+  `define PC_SRC_BRCH  `W_PC_SRC'd2
+  `define PC_SRC_REGF  `W_PC_SRC'd3
 
   `define PC_SRC_NEXT  `W_PC_SRC'd0
   `define PC_SRC_JUMP  `W_PC_SRC'd1

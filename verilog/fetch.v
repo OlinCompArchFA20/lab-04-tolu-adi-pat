@@ -2,7 +2,7 @@
 `include "lib/debug.v"
 `timescale 1ns / 1ps
 
-module FETCH 
+module FETCH
  (input                      clk,
   input                      rst,
   input      [`W_PC_SRC-1:0] pc_src,
@@ -18,14 +18,17 @@ module FETCH
       pc_next <= `W_CPU'd0;
     end
     else begin
-      case(pc_src) 
+      case(pc_src)
         // Make sure you're very careful here!!
-        // You need to add more cases here
-        default     : pc_next <= pc_next + 4; 
+        // handle all pc src cases
+        `PC_SRC_NEXT begin pc_next <= pc_next + 4; end
+        `PC_SRC_JUMP begin pc_next <= jump_addr;end
+        `PC_SRC_BRCH begin pc_next <= imm_addr end
+        `PC_SRC_REGF begin pc_next <= reg_addr; end
+        default     : pc_next <= pc_next + 4;
       endcase
-      if (`DEBUG_PC && ~rst) 
-        $display("-- PC, PC/4 = %x, %d",pc_next,pc_next/4); 
+      if (`DEBUG_PC && ~rst)
+        $display("-- PC, PC/4 = %x, %d",pc_next,pc_next/4);
     end
   end
 endmodule
-

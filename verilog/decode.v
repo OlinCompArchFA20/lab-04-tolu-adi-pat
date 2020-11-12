@@ -78,13 +78,39 @@ module DECODE
           default: /* default catch */;
         endcase
       end
-      `OP_ONE: begin end // for opcode 1
-      `OP_TWO: begin wa = rs + imm; end // for opcode 2
-      `OP_THREE: begin wa = rs + imm; end // for opcode 3
-      `ANDI: begin wa = rs && imm; end
-      `ORI: begin wa = rs || imm; end
-      `SLTI: begin wa = rs < imm; end
-      `SLTIU: begin wa = rs < imm; end
+      `OP_ONE: begin end // for opcode 1, TODO: not sure what to do
+      `ADDIU: begin alu_op=`F_ADD; end
+      `ADDI: begin alu_op=`F_ADD; end
+      `ANDI: begin alu_op=`F_AND; end
+      `LUI: begin alu_op=`F_SLL; end
+      `ORI: begin alu_op=`F_OR; end
+      `SLTI: begin alu_op=`F_SLT; end
+      `SLT: begin alu_op=`F_SLT; end
+      `SLTIU: begin alu_op=`F_SLT; end
+      `XORI: begin alu_op=`F_XOR; end
+      `BEQ: begin alu_op=`F_SLT; end
+      `BGEZ: begin alu_op=`F_SLT; end
+      `BGEZAL: begin alu_op=`F_SLT; end
+      `BGTZ: begin alu_op=`F_SLT; end
+      `BLTZ: begin alu_op=`F_SLT; end
+      `BLEZ: begin alu_op=`F_SLT; end
+      `BNE: begin alu_op=`F_SLT; end
+      `BLTZAL: begin alu_op=`F_SLT; end
+      //`J_: begin alu_op=`F_ end // TODO: Resolve these
+      //`JAL: begin alu_op=`end
+      // `JALR: begin alu_op=`end // R type?
+      // `MFC0: begin alu_op=`end
+      // `JR: begin alu_op=`end // R type?
+      // `MTC0: begin alu_op=` end
+      `LB: begin alu_op=`F_ADD end
+      `LBU: begin alu_op=`F_ADD end
+      `LHU: begin alu_op=`F_ADD end
+      `LH: begin alu_op=`F_ADD end
+      `LW: begin alu_op=`F_ADD end
+      `SB: begin alu_op=`F_ADD end
+      `SW: begin alu_op=`F_ADD end
+      `SH: begin alu_op=`F_ADD end
+
       // Here be dragons.
       // @@@@@@@@@@@@@@@@@@@@@**^^""~~~"^@@^*@*@@**@@@@@@@@@
       // @@@@@@@@@@@@@*^^'"~   , - ' '; ,@@b. '  -e@@@@@@@@@
