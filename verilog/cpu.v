@@ -127,7 +127,7 @@ module SINGLE_CYCLE_CPU
               $display("SYSCALL 10: Exiting...");
               $finish;
             end
-          default:;
+          default: $display("SYSCALL  1: a0 = %x",dataB);
         endcase
     end
   end
