@@ -53,7 +53,6 @@ module SINGLE_CYCLE_CPU
    wire [W_IMM_EXT-1:0] imm_ext;
    wire [W_OPCODE-1:0] alu_opcode;
    wire [W_CPU-1:0] instruction; // your 32 bit wide instruction that comes out of memory
-   wire [W_REG-1:0] rg_dst;//register destination
 
 
 
@@ -67,7 +66,7 @@ module SINGLE_CYCLE_CPU
    wire [W_CPU-1:0] dataB; // data in register B
    wire [W_REG-1:0] addressA; //address of register A
    wire [W_REG-1:0] addressB; // address of register B
-   wire [W_REG-1:0] Aw; //write address
+   wire [W_REG-1:0] Aw; // this is the output of the mux
    wire [W_MEM_CMD-1:0] mem_cmd; // chooses to write to processor memory or not
 
 
@@ -84,67 +83,39 @@ module SINGLE_CYCLE_CPU
 
 
    // initializing PC and instruction components
-   DECODE instruction_decode(.inst(instruction), .wa(rg_dst), .ra1(rs), .ra2(rt), .reg_wen(writeRegEnable), .imm_ext(imm_ext), .imm(immediate), .addr(addr), .alu_op(alu_opcode),.pc_src(pc_src), .mem_cmd(mem_cmd), .alu_src(alu_src), .reg_src(memToReg));
+   DECODE instruction_decode(.inst(instruction), .wa(Aw), .ra1(rs), .ra2(rt), .reg_wen(writeRegEnable), .imm_ext(imm_ext), .imm(immediate), .addr(addr), .alu_op(alu_opcode),.pc_src(pc_src), .mem_cmd(mem_cmd), .alu_src(alu_src), .reg_src(memToReg));
    FETCH instruction_fetch(.clk(clk), .rst(rst), .pc_src(pc_src), .branch_ctrl(branch_ctrl), .reg_addr(reg_addr), .jump_addr(jump_addr), .imm_addr(imm_addr), .pc_next(pc_next));
 
    // this memory serves as both instruction and processor memory
    MEMORY instruction_memory(.clk(clk),.rst(rst),.PC(pc),.instruction(instruction), .mem_cmd(mem_cmd),.data_in(dataB),.data_addr(ALU_out),.data_out(mem_out));
 
    // initializing processor components
-   // REGFILE processor_register(.clk(clk),.rst(rst),.wren(writeRegEnable),.wa(rgdst),.wd(dataToWrite), .ra1(rd),.ra2(rt),.rd1(dataA),.rd2(dataB));
+   REGFILE processor_register(.clk(clk),.rst(rst),.wren(writeRegEnable),.wa(Aw),.wd(dataToWrite), .ra1(rd),.ra2(rt),.rd1(dataA),.rd2(dataB));
    ALU processor_ALU(.alu_op(alu_opcode),.A(dataA),.B(ALU_in), .R(ALU_out),.overflow(overflow),.isZero(isZero));
    // MEMORY processor_memory(.clk(clk),.rst(rst),.PC(PC),.instruction(instruction), .mem_cmd(mem_cmd),.data_in(data_in),.data_addr(data_addr),.data_out(mem_out));
 
 
-
-
    always @* begin
     case (memToReg)//MUX for data to write
-      `mem_write: begin dataToWrite = ALU_out end
-      `ALU_write: begin dataToWrite = mem_out end
+      `REG_SRC_MEM: begin dataToWrite = mem_out end
+      `REG_SRC_ALU: begin dataToWrite = ALU_out end
+      `REG_SRC_PC: begin dataToWrite = PC end
       default: ;
     endcase
     end
 
     always @* begin
      case (alu_src)//MUX for B in ALU
-       `dataBintoALU: begin ALU_in = dataB end
-       `immintoALU: begin ALU_in = immediate end
+       `ALU_SRC_REG: begin ALU_in = dataB end
+       `ALU_SRC_IMM: begin ALU_in = immediate end
+       `ALU_SRC_SHA: begin end
        default: ;
      endcase
      end
 
-     // TODO: this mem_cmd is wrong!!
-
-     always @* begin
-      case (rg_dst)//MUX to set destination register for processor regfile
-        `RdintoAw: begin Aw = rd end // if rgdst is 0
-        `RtintoAw: begin Aw = rt end //
-        default: ;
-      endcase
-      end
-
       //and gate for zero output ALU to branch
       //nand #5 nandbranch(branch_mux_select_nand, isZero, branch);
       //not #5 notbranch(branch_ctrl,branch_mux_select_nand);
-
-      always @* begin
-       case (branch_ctrl)//MUX for branch
-         `nothingaddedtoPC: begin branchmuxoutput = 1'b0// PC updates
-         `addbranchaddresstoPC: begin branchmuxoutput= immediate end
-         default: ;
-       endcase
-       end
-
-    //  PC_branch_handled = 1'd4 + branchmuxoutput + PC ;//update PC
-
-      always @* begin
-       case (pc_src)//MUX for jump and finalize update to PC
-         `PCnewisPC: begin pc = pc_next end// PC updates
-         `insttargetisPC: begin pc = jump_addr end
-         default: ;
-       endcase
-       end
 
 
   //SYSCALL Catch

@@ -18,7 +18,6 @@ module DECODE
   // ALU Control
   output reg [`W_FUNCT-1:0]   alu_op,  // ALU OP
   // Muxing
-  output reg [`W_RG_DST-1:0]  rg_dst,  //Register Dest.
   output reg [`W_PC_SRC-1:0]  pc_src,  // PC Source
   output reg [`W_MEM_CMD-1:0] mem_cmd, // Mem Command
   output reg [`W_ALU_SRC-1:0] alu_src, // ALU Source
@@ -43,73 +42,178 @@ module DECODE
   end
 
 
+  // TODO: does the ADDIU and ADDI have the same control bits?
+
   always @* begin
     case(inst[`FLD_OPCODE]) // evaluating op codes
       `OP_ZERO: begin // if the opcode is 0
         case (inst[`FLD_FUNCT]) // evaluating functs within opcode = 0
-          `F_ADD: begin alu_op=`F_ADD;  end
-          `F_ADDU: begin alu_op=`F_ADDU; end
-          `F_AND: begin alu_op=`F_AND; end
-          `F_NOR: begin alu_op=`F_NOR; end
-          `F_OR: begin alu_op=`F_OR; end
-          `F_SLT: begin alu_op=`F_SLT; end
-          `F_SLTU: begin alu_op=`F_SLTU; end
-          `F_SUBU: begin alu_op=`F_SUBU; end
-          `F_SUB: begin alu_op=`F_SUB; end
-          `F_XOR: begin alu_op=`F_XOR; end
-          `F_SLL: begin alu_op=`F_SLL; end
-          `F_SLLV: begin alu_op=`F_SLLV; end
-          `F_SRA: begin alu_op=`F_SRA; end
-          `F_SRAV: begin alu_op=`F_SRAV; end
-          `F_SRL: begin alu_op=`F_SRL; end
-          `F_SRLV: begin alu_op=`F_SRLV; end
-          `F_DIV: begin alu_op=`F_DIV; end
-          `F_DIVU: begin alu_op=`F_DIVU; end
-          `F_MFHI: begin alu_op=`F_MFHI; end
-          `F_MFLO: begin alu_op=`F_MFLO; end
-          `F_MTHI: begin alu_op=`F_MTHI; end
-          `F_MTLO: begin alu_op=`F_MTLO; end
-          `F_MULT: begin alu_op=`F_MULT; end
-          `F_MULTU: begin alu_op=`F_MULTU; end
-          `F_BREAK: begin alu_op=`F_BREAK; end
-          `F_JALR: begin alu_op=`F_JALR; end
-          `F_JR: begin alu_op=`F_JR; end
+          `F_ADD: begin
+             alu_op=`F_ADD; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+             imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+             alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+             pc_src  = `PC_SRC_NEXT; end
+
+          `F_ADDU: begin alu_op=`F_ADDU; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT; end
+
+          `F_AND: begin alu_op=`F_AND; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT; end
+
+          `F_NOR: begin alu_op=`F_NOR; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT; end
+
+          `F_OR: begin alu_op=`F_OR; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT; end
+
+          `F_SLT: begin alu_op=`F_SLT; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT; end
+
+          `F_SLTU: begin alu_op=`F_SLTU; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT; end
+
+          `F_SUBU: begin alu_op=`F_SUBU;  wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT;end
+
+          `F_SUB: begin alu_op=`F_SUB; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT; end
+
+          `F_XOR: begin alu_op=`F_XOR; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT; end
+
+          // `F_SLL: begin alu_op=`F_SLL; end// TODO: pass in SHAMT?
+          // `F_SRL: begin alu_op=`F_SRL; end// TODO: pass in SHAMT?
+          // `F_SRA: begin alu_op=`F_SRA; end // TODO: pass in SHAMT?
+
+
+          `F_SLLV: begin alu_op=`F_SLLV; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT; end
+
+          `F_SRAV: begin alu_op=`F_SRAV; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT; end
+
+          `F_SRLV: begin alu_op=`F_SRLV; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT; end
+
+          `F_DIV: begin alu_op=`F_DIV; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT; end
+
+          `F_DIVU: begin alu_op=`F_DIVU;  wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT;end
+
+
+          // `F_MFHI: begin alu_op=`F_MFHI; end // TODO: @tolu
+          // `F_MFLO: begin alu_op=`F_MFLO; end
+          // `F_MTHI: begin alu_op=`F_MTHI; end
+          // `F_MTLO: begin alu_op=`F_MTLO; end
+
+          `F_MULT: begin alu_op=`F_MULT; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT; end
+
+          `F_MULTU: begin alu_op=`F_MULTU; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT; end
+
+          // `F_BREAK: begin alu_op=`F_BREAK; end // TODO: ctrl for these
+          // `F_JALR: begin alu_op=`F_JALR; end
+          // `F_JR: begin alu_op=`F_JR; end
           `F_SYSCAL: begin alu_op=`F_SYSCAL; end
           default: /* default catch */;
         endcase
       end
       `OP_ONE: begin end // for opcode 1, TODO: not sure what to do
-      `ADDIU: begin alu_op=`F_ADD; end
-      `ADDI: begin alu_op=`F_ADD; end
-      `ANDI: begin alu_op=`F_AND; end
+
+      `ADDIU: begin alu_op=`F_ADD; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+        imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+        alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
+        pc_src  = `PC_SRC_NEXT; end
+
+      `ADDI: begin alu_op=`F_ADD; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+        imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+        alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
+        pc_src  = `PC_SRC_NEXT; end
+
+      `ANDI: begin alu_op=`F_AND; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+        imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+        alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
+        pc_src  = `PC_SRC_NEXT; end
+
       `LUI: begin alu_op=`F_SLL; end
-      `ORI: begin alu_op=`F_OR; end
-      `SLTI: begin alu_op=`F_SLT; end
-      `SLT: begin alu_op=`F_SLT; end
-      `SLTIU: begin alu_op=`F_SLT; end
-      `XORI: begin alu_op=`F_XOR; end
-      `BEQ: begin alu_op=`F_SLT; end
-      `BGEZ: begin alu_op=`F_SLT; end
-      `BGEZAL: begin alu_op=`F_SLT; end
-      `BGTZ: begin alu_op=`F_SLT; end
-      `BLTZ: begin alu_op=`F_SLT; end
-      `BLEZ: begin alu_op=`F_SLT; end
-      `BNE: begin alu_op=`F_SLT; end
-      `BLTZAL: begin alu_op=`F_SLT; end
-      //`J_: begin alu_op=`F_ end // TODO: Resolve these
-      //`JAL: begin alu_op=`end
+      `ORI: begin alu_op=`F_OR; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+        imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+        alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
+        pc_src  = `PC_SRC_NEXT; end
+
+      `SLTI: begin alu_op=`F_SLT; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+        imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+        alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
+        pc_src  = `PC_SRC_NEXT; end
+
+      `SLTIU: begin alu_op=`F_SLT; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+        imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+        alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
+        pc_src  = `PC_SRC_NEXT; end
+
+      `XORI: begin alu_op=`F_XOR; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+        imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+        alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
+        pc_src  = `PC_SRC_NEXT; end
+
+      // `BEQ: begin alu_op=`F_SLT; end // TODO: Handle control bits for these
+      // `BGEZ: begin alu_op=`F_SLT; end
+      // `BGEZAL: begin alu_op=`F_SLT; end
+      // `BGTZ: begin alu_op=`F_SLT; end
+      // `BLTZ: begin alu_op=`F_SLT; end
+      // `BLEZ: begin alu_op=`F_SLT; end
+      // `BNE: begin alu_op=`F_SLT; end
+      // `BLTZAL: begin alu_op=`F_SLT; end
+
+      // `J_: begin alu_op=`F_ end // TODO: Resolve these
+      // `JAL: begin alu_op=`end
       // `JALR: begin alu_op=`end // R type?
       // `MFC0: begin alu_op=`end
       // `JR: begin alu_op=`end // R type?
       // `MTC0: begin alu_op=` end
-      `LB: begin alu_op=`F_ADD end
-      `LBU: begin alu_op=`F_ADD end
-      `LHU: begin alu_op=`F_ADD end
-      `LH: begin alu_op=`F_ADD end
-      `LW: begin alu_op=`F_ADD end
-      `SB: begin alu_op=`F_ADD end
-      `SW: begin alu_op=`F_ADD end
-      `SH: begin alu_op=`F_ADD end
+
+      // `LB: begin alu_op=`F_ADD; end // TODO: Handle control bits for these
+      // `LBU: begin alu_op=`F_ADD; end
+      // `LHU: begin alu_op=`F_ADD; end
+      // `LH: begin alu_op=`F_ADD; end
+      // `LW: begin alu_op=`F_ADD; end
+      // `SB: begin alu_op=`F_ADD; end
+      // `SW: begin alu_op=`F_ADD; end
+      // `SH: begin alu_op=`F_ADD; end
 
       // Here be dragons.
       // @@@@@@@@@@@@@@@@@@@@@**^^""~~~"^@@^*@*@@**@@@@@@@@@
