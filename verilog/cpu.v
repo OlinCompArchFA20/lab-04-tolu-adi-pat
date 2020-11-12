@@ -9,15 +9,7 @@
 
 /*
 Questions: TODO:
-pc_src?
-use instruction memory for processor memory???
-can alu be behavioral?
-should our decode be
-- Unconditionally setting values of rs rt, imm addr etc
-- and to set the ALU op code just a ton of muxing that looks for the assembly command?
-control bits???
-// hello
-regdst  mux control bit in decode wya?
+imm_ext? mux?
 */
 
 module SINGLE_CYCLE_CPU
@@ -37,7 +29,7 @@ module SINGLE_CYCLE_CPU
   // wire PC_branch_handled;//PC after branch has been factored and 4 is added
    //wire[W_CPU-6:0] branchmuxoutput;//wire to jump mux out of branch; adds nothing and lets +4+0, or adds +4+branch
 
-   wire[`W_SRC-1:0] pc_src;// mux for jump select
+   wire [`W_PC_SRC-1:0] pc_src;// mux for jump select
    wire [`W_CPU-1:0] reg_addr;
    wire [`W_JADDR-1:0] jump_addr;//target address
    wire [`W_IMM-1:0] imm_addr;//imm address for branching
@@ -51,6 +43,7 @@ module SINGLE_CYCLE_CPU
    wire [`W_OPCODE-1:0] alu_opcode;
    wire [`W_CPU-1:0] instruction; // your 32 bit wide instruction that comes out of memory
    wire [`W_REG_SRC-1:0] memToReg;
+   wire [`W_CPU-`W_IMM -1: 0] imm_ext_16;
 
 
    // processor Register wires
@@ -83,10 +76,11 @@ module SINGLE_CYCLE_CPU
 
    // initializing PC and instruction components
    DECODE instruction_decode(.inst(instruction), .wa(Aw), .ra1(rs), .ra2(rt), .reg_wen(writeRegEnable), .imm_ext(imm_ext), .imm(imm), .addr(addr), .alu_op(alu_opcode),.pc_src(pc_src), .mem_cmd(mem_cmd), .alu_src(alu_src), .reg_src(memToReg));
+   assign imm_ext_16 = {`W_IMM{imm_ext}};
    FETCH instruction_fetch(.clk(clk), .rst(rst), .pc_src(pc_src), .branch_ctrl(branch_ctrl), .reg_addr(reg_addr), .jump_addr(jump_addr), .imm_addr(imm_addr), .pc_next(pc_next));
 
    // this memory serves as both instruction and processor memory
-   MEMORY instruction_memory(.clk(clk),.rst(rst),.PC(PC),.instruction(instruction), .mem_cmd(mem_cmd),.data_in(dataB),.data_addr(ALU_out),.data_out(mem_out));
+   MEMORY stage_MEMORY(.clk(clk),.rst(rst),.PC(PC),.instruction(instruction), .mem_cmd(mem_cmd),.data_in(dataB),.data_addr(ALU_out),.data_out(mem_out));
 
    // initializing processor components
    REGFILE processor_register(.clk(clk),.rst(rst),.wren(writeRegEnable),.wa(Aw),.wd(dataToWrite_reg), .ra1(rd),.ra2(rt),.rd1(dataA),.rd2(dataB));
@@ -106,7 +100,8 @@ module SINGLE_CYCLE_CPU
     always @* begin
      case (alu_src)//MUX for B in ALU
        `ALU_SRC_REG: begin ALU_in = dataB; end
-       `ALU_SRC_IMM: begin ALU_in = imm; end
+       `ALU_SRC_IMM: begin ALU_in[`W_IMM-1:0] = imm;
+                            ALU_in[`W_CPU-1:`W_IMM] = imm_ext_16; end
        // `ALU_SRC_SHA: begin end
        default: ;
      endcase
@@ -117,20 +112,24 @@ module SINGLE_CYCLE_CPU
       //not #5 notbranch(branch_ctrl,branch_mux_select_nand);
 
 
+  // the format you print in is determined by the value of $v0
+  // you always actually print whatever is in $a0 or $a1 etc
+  // call syscal to print
+
   // TODO: SYSCALL Catch
-  // always @(posedge clk) begin
-  //   //Is the instruction a SYSCALL?
-  //   if (inst[`FLD_OPCODE] == `OP_ZERO &&
-  //       inst[`FLD_FUNCT]  == `F_SYSCAL) begin
-  //       case(rd1)
-  //         1 : $display("SYSCALL  1: a0 = %x",rd2);
-  //         10: begin
-  //             $display("SYSCALL 10: Exiting...");
-  //             $finish;
-  //           end
-  //         default:;
-  //       endcase
-  //   end
-  // end
+  always @(posedge clk) begin
+    //Is the instruction a SYSCALL?
+    if (instruction[`FLD_OPCODE] == `OP_ZERO &&
+        instruction[`FLD_FUNCT]  == `F_SYSCAL) begin
+        case(dataA) // output from regfile
+          1 : $display("SYSCALL  1: a0 = %x",dataB);
+          10: begin
+              $display("SYSCALL 10: Exiting...");
+              $finish;
+            end
+          default:;
+        endcase
+    end
+  end
 
 endmodule

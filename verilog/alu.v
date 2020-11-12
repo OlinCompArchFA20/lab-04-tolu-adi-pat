@@ -9,6 +9,7 @@ module ALU
   output reg overflow, // 1 if overflow, 0 if not
   output reg isZero);
 
+  reg temp;
   // behavioral ALU
   always @* begin
     case(alu_op)
@@ -16,9 +17,13 @@ module ALU
     `F_ADDU: begin R = A + B; end // add unsigned
     `F_AND: begin R = A & B; end
     `F_NOR: begin R = A ~| B; end
-    `F_OR: begin R = A || B;  end
-    `F_SLT: begin  R = A < B; end
-    `F_SLTU: begin R = A < B; end
+    `F_OR: begin R = A | B;  end
+
+    `F_SLT: begin  if (A < B)  R = `W_CPU'b1;
+      else R = `W_CPU'b0;
+      end
+    `F_SLTU: begin if (A < B)  R = `W_CPU'b1;
+      else R = `W_CPU'b0; end
     `F_SUBU: begin R = A - B; end
     `F_SUB: begin R = A - B; end
     `F_XOR: begin R = A ^ B; end

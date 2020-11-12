@@ -148,7 +148,10 @@ module DECODE
           // `F_BREAK: begin alu_op=`F_BREAK; end // TODO: ctrl for these
           // `F_JALR: begin alu_op=`F_JALR; end
           // `F_JR: begin alu_op=`F_JR; end
-          `F_SYSCAL: begin alu_op=`F_SYSCAL; end
+          `F_SYSCAL: begin alu_op=`F_ADD; wa=rd; ra1 = rs; ra2 = rt; reg_wen = `WDIS;
+            imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT; end
           default: /* default catch */;
         endcase
       end
