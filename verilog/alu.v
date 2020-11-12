@@ -9,13 +9,6 @@ module ALU
   output reg overflow, // 1 if overflow, 0 if not
   output reg isZero);
 
-  // insert alu slice Here
-
-  wire [W:0]   carry;
-  wire [W-1:0] result;
-
-  assign carry[0] = 1'b0;
-
   // behavioral ALU
   always @* begin
     case(alu_op)
