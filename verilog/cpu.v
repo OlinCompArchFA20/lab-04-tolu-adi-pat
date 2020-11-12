@@ -15,7 +15,9 @@ can alu be behavioral?
 should our decode be
 - Unconditionally setting values of rs rt, imm addr etc
 - and to set the ALU op code just a ton of muxing that looks for the assembly command?
-control bits??? 
+control bits???
+// hello
+regdst  mux control bit in decode wya?
 */
 
 module SINGLE_CYCLE_CPU
@@ -25,19 +27,20 @@ module SINGLE_CYCLE_CPU
    // start at a high lvl block diagram Here
 
    // PC FETCH Wires
-   wire PC; // program counter wire
+   wire pc; // program counter wire
    wire [W_CPU-1:0] data_in;
-   wire [W_CPU-1:0] data_addr;
-   wire [W_CPU-1:0]  data_out;
+
+
    //wire jump;//pcsrc is jump
-   wire [`W_EN-1:0] branch;
-   wire PC_branch_handled;//PC after branch has been factored and 4 is added
-   wire[W_CPU-6:0] branchmuxoutput;//wire to jump mux out of branch; adds nothing and lets PC+4+0, or adds PC+4+branch
-   wire[W_PC_SRC-1:0] pc_src;// mux for jump select
+   //wire [W_EN-1:0] branch;
+  // wire PC_branch_handled;//PC after branch has been factored and 4 is added
+   //wire[W_CPU-6:0] branchmuxoutput;//wire to jump mux out of branch; adds nothing and lets +4+0, or adds +4+branch
+   wire[W__SRC-1:0] pc_src;// mux for jump select
   wire [W_CPU-1:0] reg_addr;
   wire [W_JADDR-1:0] jump_addr;//target address
   wire  [W_IMM-1:0] imm_addr;//imm address for branching
   wire [W_CPU-1:0] pc_next;//next pc value
+  wire [W_JADDR-1:0] addr; // jump addr field for branching
 
 
 
@@ -50,7 +53,6 @@ module SINGLE_CYCLE_CPU
    wire [W_IMM_EXT-1:0] imm_ext;
    wire [W_OPCODE-1:0] alu_opcode;
    wire [W_CPU-1:0] instruction; // your 32 bit wide instruction that comes out of memory
-  // wire rgdst;
 
 
 
@@ -65,37 +67,33 @@ module SINGLE_CYCLE_CPU
    wire [W_REG-1:0] addressA; //address of register A
    wire [W_REG-1:0] addressB; // address of register B
    wire [W_REG-1:0] Aw; //write address
-   wire [W_MEM_CMD-1:0] mem_cmd;//chooses rt or rd?? instead of rgdst
+   wire rg_dst;//register destination
+   wire [W_MEM_CMD-1:0] mem_cmd; // chooses to write to processor memory or not
 
 
 
    // processor ALU wires
    wire [W_CPU-1:0] ALU_out; // alu result
-   wire isZero; // used for JLT calculations
+   wire isZero; // used for JLT calculations, output of ALU
    wire alu_src; // from decode, picks between ALU inputs
    wire [W_CPU-1:0] ALU_in; // 2nd alu input
    wire overflow; //used to detect overflow
-
-
-
 
    // processor MEMORY wires
    wire [W_CPU-1:0] mem_out; // alu result
 
 
-
-
-
    // initializing PC and instruction components
-   MEMORY instruction_memory(.clk(clk),.rst(rst),.PC(PC),.instruction(instruction), .mem_cmd(mem_cmd),.data_in(data_in),.data_addr(data_addr),.data_out(data_out));
-   DECODE instruction_decode(.inst(instruction), .wa(Aw), .ra1(rs), .ra2(rt), .reg_wen(writeRegEnable), .imm_ext(imm_ext), .imm(immediate), .addr(), .alu_op(alu_opcode),.pc_src(pc_src), .mem_cmd(mem_cmd), .alu_src(alu_src), .reg_src(memToReg));
+   DECODE instruction_decode(.inst(instruction), .wa(Aw), .ra1(rs), .ra2(rt), .reg_wen(writeRegEnable), .imm_ext(imm_ext), .imm(immediate), .addr(addr), .alu_op(alu_opcode),.pc_src(pc_src), .mem_cmd(mem_cmd), .alu_src(alu_src), .reg_src(memToReg));
    FETCH instruction_fetch(.clk(clk), .rst(rst), .pc_src(pc_src), .branch_ctrl(branch_ctrl), .reg_addr(reg_addr), .jump_addr(jump_addr), .imm_addr(imm_addr), .pc_next(pc_next));
 
+   // this memory serves as both instruction and processor memory
+   MEMORY instruction_memory(.clk(clk),.rst(rst),.PC(pc),.instruction(instruction), .mem_cmd(mem_cmd),.data_in(dataB),.data_addr(ALU_out),.data_out(mem_out));
 
    // initializing processor components
    // REGFILE processor_register(.clk(clk),.rst(rst),.wren(writeRegEnable),.wa(rgdst),.wd(dataToWrite), .ra1(rd),.ra2(rt),.rd1(dataA),.rd2(dataB));
    ALU processor_ALU(.alu_op(alu_opcode),.A(dataA),.B(ALU_in), .R(ALU_out),.overflow(overflow),.isZero(isZero));
-   MEMORY processor_memory(.clk(clk),.rst(rst),.PC(PC),.instruction(instruction), .mem_cmd(mem_cmd),.data_in(data_in),.data_addr(data_addr),.data_out(mem_out));
+   // MEMORY processor_memory(.clk(clk),.rst(rst),.PC(PC),.instruction(instruction), .mem_cmd(mem_cmd),.data_in(data_in),.data_addr(data_addr),.data_out(mem_out));
 
 
 
@@ -116,8 +114,10 @@ module SINGLE_CYCLE_CPU
      endcase
      end
 
+     // TODO: this mem_cmd is wrong!!
+
      always @* begin
-      case (mem_cmd)//MUX to set destination register for processor regfile
+      case (rg_dst)//MUX to set destination register for processor regfile
         `RdintoAw: begin Aw = rd end // if rgdst is 0
         `RtintoAw: begin Aw = rt end //
         default: ;
@@ -125,8 +125,8 @@ module SINGLE_CYCLE_CPU
       end
 
       //and gate for zero output ALU to branch
-      nand #5 nandbranch(branch_mux_select_nand, isZero, branch);
-      not #5 notbranch(branch_ctrl,branch_mux_select_nand);
+      //nand #5 nandbranch(branch_mux_select_nand, isZero, branch);
+      //not #5 notbranch(branch_ctrl,branch_mux_select_nand);
 
       always @* begin
        case (branch_ctrl)//MUX for branch
@@ -140,8 +140,8 @@ module SINGLE_CYCLE_CPU
 
       always @* begin
        case (pc_src)//MUX for jump and finalize update to PC
-         `PCnewisPC: begin PC = PC_branch_handled end// PC updates
-         `insttargetisPC: begin PC = instruction[W_CPU-6:0] end
+         `PCnewisPC: begin pc = pc_next end// PC updates
+         `insttargetisPC: begin pc = jump_addr end
          default: ;
        endcase
        end

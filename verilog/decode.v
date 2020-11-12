@@ -18,6 +18,7 @@ module DECODE
   // ALU Control
   output reg [`W_FUNCT-1:0]   alu_op,  // ALU OP
   // Muxing
+  output reg [`W_RG_DST-1:0]  rg_dst,  //Register Dest.
   output reg [`W_PC_SRC-1:0]  pc_src,  // PC Source
   output reg [`W_MEM_CMD-1:0] mem_cmd, // Mem Command
   output reg [`W_ALU_SRC-1:0] alu_src, // ALU Source
@@ -47,19 +48,33 @@ module DECODE
       `OP_ZERO: begin // if the opcode is 0
         case (inst[`FLD_FUNCT]) // evaluating functs within opcode = 0
           `F_ADD: begin alu_op=`F_ADD;  end
-          `F_ADDU: begin alu_op=`F_ADDU end
-          
-          // `SLL: begin wa = rs << 1'b0; end
-          // `SRL: begin wa = rs >> 1'b0; end // 2
-          // `ADD: begin wa = rs + rt; end
-          // `ADDU: begin wa = rs + rt; end
-          // `SUB: begin wa = rs - rt; end
-          // `SUBU: begin wa = rs - rt; end
-          // `AND: begin wa = rs && rt; end
-          // `OR: begin wa = rs || rt; end
-          // `NOR: begin wa = rs ~| rt; end
-          // `SLT: begin wa = rs < rt; end
-          // `SLTU: begin wa = rs < rt; end
+          `F_ADDU: begin alu_op=`F_ADDU; end
+          `F_AND: begin alu_op=`F_AND; end
+          `F_NOR: begin alu_op=`F_NOR; end
+          `F_OR: begin alu_op=`F_OR; end
+          `F_SLT: begin alu_op=`F_SLT; end
+          `F_SLTU: begin alu_op=`F_SLTU; end
+          `F_SUBU: begin alu_op=`F_SUBU; end
+          `F_SUB: begin alu_op=`F_SUB; end
+          `F_XOR: begin alu_op=`F_XOR; end
+          `F_SLL: begin alu_op=`F_SLL; end
+          `F_SLLV: begin alu_op=`F_SLLV; end
+          `F_SRA: begin alu_op=`F_SRA; end
+          `F_SRAV: begin alu_op=`F_SRAV; end
+          `F_SRL: begin alu_op=`F_SRL; end
+          `F_SRLV: begin alu_op=`F_SRLV; end
+          `F_DIV: begin alu_op=`F_DIV; end
+          `F_DIVU: begin alu_op=`F_DIVU; end
+          `F_MFHI: begin alu_op=`F_MFHI; end
+          `F_MFLO: begin alu_op=`F_MFLO; end
+          `F_MTHI: begin alu_op=`F_MTHI; end
+          `F_MTLO: begin alu_op=`F_MTLO; end
+          `F_MULT: begin alu_op=`F_MULT; end
+          `F_MULTU: begin alu_op=`F_MULTU; end
+          `F_BREAK: begin alu_op=`F_BREAK; end
+          `F_JALR: begin alu_op=`F_JALR; end
+          `F_JR: begin alu_op=`F_JR; end
+          `F_SYSCAL: begin alu_op=`F_SYSCAL; end
           default: /* default catch */;
         endcase
       end

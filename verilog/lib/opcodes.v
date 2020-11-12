@@ -21,7 +21,7 @@
   `define FLD_FUNCT   5:0
   `define PC_UPPER   31:28
 
-  // Mux Control Widths 
+  // Mux Control Widths
   `define W_EN         1
   `define W_PC_SRC     2
   `define W_IMM_EXT    1
@@ -29,11 +29,12 @@
   `define W_REG_SRC    2
   `define W_MEM_CMD    2
   `define W_WORD       2
+  `define W_RG_DST     2
 
   // Lots of MUX and Enable Defines
   `define WREN         `W_EN'b1
   `define WDIS         `W_EN'b0
-  
+
   `define PC_SRC_NEXT  `W_PC_SRC'd0
   `define PC_SRC_JUMP  `W_PC_SRC'd1
   `define PC_SRC_BRCH  `W_PC_SRC'd2
@@ -117,7 +118,7 @@
   `define F_JALR    `W_OPCODE'b001001
   `define F_JR      `W_OPCODE'b001000
   `define F_SYSCAL  `W_OPCODE'b001100
-  
+
   // RT Field Codes for Branches
   `define RT_BGEZ   `W_REG'b00001
   `define RT_BGEZAL `W_REG'b10001
@@ -142,7 +143,7 @@
   `define AND       `W_OPCODE'b000000
   `define ANDI      `W_OPCODE'b001100
   `define LUI       `W_OPCODE'b001111
-  `define NOR       `W_OPCODE'b000000  
+  `define NOR       `W_OPCODE'b000000
   `define OR        `W_OPCODE'b000000
   `define ORI       `W_OPCODE'b001101
   `define SLT       `W_OPCODE'b000000
@@ -177,13 +178,13 @@
   `define BLTZ      `W_OPCODE'b000001
   `define BLTZAL    `W_OPCODE'b000001
   `define BNE       `W_OPCODE'b000101
-  `define J_        `W_OPCODE'b000010  
+  `define J_        `W_OPCODE'b000010
   `define JAL       `W_OPCODE'b000011
-  `define JALR      `W_OPCODE'b000000  
+  `define JALR      `W_OPCODE'b000000
   `define JR        `W_OPCODE'b000000
   `define MFC0      `W_OPCODE'b010000
   `define MTC0      `W_OPCODE'b010000
-  
+
   // Load Store Instructions
   `define LB        `W_OPCODE'b100000
   `define LBU       `W_OPCODE'b100100
@@ -194,7 +195,7 @@
   `define SH        `W_OPCODE'b101001
   `define SW        `W_OPCODE'b101011
 
-  // Special Instructions  
+  // Special Instructions
   `define BREAK     `W_OPCODE'b000000
   `define SYSCAL    `W_OPCODE'b000000
 
