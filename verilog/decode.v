@@ -13,6 +13,9 @@ module DECODE
   // Immediate
   output reg [`W_IMM_EXT-1:0] imm_ext, // 1-Sign or 0-Zero extend
   output reg [`W_IMM-1:0]     imm,     // Immediate Field
+  // Shift
+  output reg [`W_SHA_EXT-1:0] sha_ext,//Sign extend for shamt
+  output reg [`W_SHAMT-1:0]   sha,     // Shift Amount
   // Jump Address
   output reg [`W_JADDR-1:0]   addr,    // Jump Addr Field
   // ALU Control
@@ -31,7 +34,9 @@ module DECODE
   assign rt   = inst[`FLD_RT];
   assign rd   = inst[`FLD_RD];
   assign imm  = inst[`FLD_IMM];
+  assign sha  = inst[`FLD_SHAMT];
   assign addr = inst[`FLD_ADDR];
+  //assign sha_ext = SHA_SIGN_EXT;
 
   always @(inst) begin
     if (`DEBUG_DECODE)
@@ -51,38 +56,86 @@ module DECODE
         // NOTE: Since we're using RS and RT for operations, immediate doesn't matter, but we still need to set imm_ext.
         // NOTE: not sure how to deal with unsigned vs signed operations? Should it be handled in the ALU?
         `OP_ZERO: begin
-          wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
-          imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
-          alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = inst[`FLD_FUNCT];
-
           // Differentiate by FUNCT cases, do this for shifts and syscall
           case(inst[`FLD_FUNCT])
-            `F_SLL, `F_SRL, `F_SRA: alu_src = `ALU_SRC_SHA;
+
+            // `F_SLL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SLL; sha_ext = SHA_SIGN_EXT; end
+            // `F_SRL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRL; sha_ext = SHA_ZERO_EXT; end
+            // `F_SRA: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRA; sha_ext = SHA_SIGN_EXT; end
+
+            `F_SLL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SLL; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
+
+            `F_SRL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRL; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
+
+            `F_SRA: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRA; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
             // If syscall, set read address1 to be $v0 and read address2 to be $a0
             `F_SYSCAL: begin
-              ra1 = `REG_V0; ra2 = `REG_A0;
+              ra1 = `REG_V0; ra2 = `REG_A0; wa = rd; reg_wen = `WREN;
+              imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
+              alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+              pc_src  = `PC_SRC_NEXT;  alu_op  = inst[`FLD_FUNCT];
             end
-            default: ;
+            default: begin wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
+            alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+            pc_src  = `PC_SRC_NEXT;  alu_op  = inst[`FLD_FUNCT]; end
           endcase
         end
 
         // I-type instruction.
 
         // Cases where we sign extend
-        `ADDI, `ANDI, `ORI, `SLTI, `XORI: begin
+        `ADDI: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = inst[`FLD_OPCODE];
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADD;
+        end
+
+        `ANDI: begin
+          wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+          imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
+          alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_AND;
+        end
+
+        `ORI: begin
+          wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+          imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
+          alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_OR;
+        end
+
+        `SLTI: begin
+          wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+          imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
+          alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_SLT;
+        end
+
+        `XORI: begin
+          wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+          imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
+          alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_XOR;
         end
 
         // Cases where we don't sign extend
-        `ADDIU, `SLTIU: begin
+        `ADDIU: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = inst[`FLD_OPCODE];
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADD;
+        end
+
+        `SLTIU: begin
+          wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+          imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
+          alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_SLT;
         end
 
         `BEQ, `BNE: begin

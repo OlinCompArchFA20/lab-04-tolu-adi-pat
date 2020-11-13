@@ -25,6 +25,7 @@
   `define W_EN         1
   `define W_PC_SRC     2
   `define W_IMM_EXT    1
+  `define W_SHA_EXT    1
   `define W_ALU_SRC    2
   `define W_REG_SRC    2
   `define W_MEM_CMD    2
@@ -47,6 +48,9 @@
   `define PC_SRC_JUMP  `W_PC_SRC'd1
   `define PC_SRC_BRCH  `W_PC_SRC'd2
   `define PC_SRC_REGF  `W_PC_SRC'd3
+
+  `define SHA_SIGN_EXT `W_IMM_EXT'b1
+  `define SHA_ZERO_EXT `W_IMM_EXT'b0
 
   `define IMM_SIGN_EXT `W_IMM_EXT'b1
   `define IMM_ZERO_EXT `W_IMM_EXT'b0
