@@ -97,7 +97,7 @@ module SINGLE_CYCLE_CPU
     case (memToReg)//MUX for data to write
       `REG_SRC_MEM: begin dataToWrite_reg = mem_out; end
       `REG_SRC_ALU: begin dataToWrite_reg = ALU_out; end
-      `REG_SRC_PC: begin dataToWrite_reg = PC; end
+      `REG_SRC_PC: ;
       default: ;
     endcase
     end
@@ -105,17 +105,11 @@ module SINGLE_CYCLE_CPU
     always @* begin
      case (alu_src)//MUX for B in ALU
        `ALU_SRC_REG: begin ALU_in = rd2; end
-       //`ALU_SRC_IMM: begin ALU_in = {{`W_IMM{imm_ext}}, imm}; end
-       `ALU_SRC_IMM: begin ALU_in = {{`W_IMM{imm_ext}}, imm}; end
-       `ALU_SRC_SHA: begin ALU_in = 1'b1; end
+       `ALU_SRC_IMM: begin ALU_in = {{`IMM_SIGN_EXT{imm_ext}}, imm}; end
+       `ALU_SRC_SHA: begin ALU_in = {{`SHA_SIGN_EXT{sha_ext}}, sha}; end
        default: ;
      endcase
      end
-
-      //and gate for zero output ALU to branch
-      //nand #5 nandbranch(branch_mux_select_nand, isZero, branch);
-      //not #5 notbranch(branch_ctrl,branch_mux_select_nand);
-
 
   // the format you print in is determined by the value of $v0
   // you always actually print whatever is in $a0 or $a1 etc

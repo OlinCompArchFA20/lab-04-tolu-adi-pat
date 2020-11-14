@@ -27,11 +27,11 @@ module ALU
     `F_SUBU: begin R = A - B; end
     `F_SUB: begin R = A - B; end
     `F_XOR: begin R = A ^ B; end
-    `F_SLL: begin R = A << B; end // TODO: shiftamount wya?
+    `F_SLL: begin R = A << B; end
     `F_SLLV: begin R = A << B; end
-    `F_SRA: begin R = A >> B; end // TODO: shiftamount wya?
+    `F_SRA: begin R = A >> B; end
     `F_SRAV: begin R = A >> B; end
-    `F_SRL: begin R = A >> B; end // TODO: shiftamount wya?
+    `F_SRL: begin R = A >> B; end
     `F_SRLV: begin R = A >> B; end
     `F_DIV: begin R = A / B; end
     `F_DIVU: begin R = A / B; end

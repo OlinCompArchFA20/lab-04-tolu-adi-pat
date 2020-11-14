@@ -52,11 +52,8 @@ module DECODE
   always @* begin
       case(inst[`FLD_OPCODE])
 
-        // R-type instruction.
-        // NOTE: Since we're using RS and RT for operations, immediate doesn't matter, but we still need to set imm_ext.
-        // NOTE: not sure how to deal with unsigned vs signed operations? Should it be handled in the ALU?
+        // R-type
         `OP_ZERO: begin
-          // Differentiate by FUNCT cases, do this for shifts and syscall
           case(inst[`FLD_FUNCT])
 
             // `F_SLL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SLL; sha_ext = SHA_SIGN_EXT; end
@@ -64,14 +61,15 @@ module DECODE
             // `F_SRA: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRA; sha_ext = SHA_SIGN_EXT; end
 
             `F_SLL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SLL; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
-            imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
+            imm_ext = `IMM_SIGN_EXT; sha_ext = `SHA_SIGN_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
 
             `F_SRL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRL; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
-            imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
+            imm_ext = `IMM_SIGN_EXT; sha_ext = `SHA_ZERO_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
 
             `F_SRA: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRA; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
-            imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
-            // If syscall, set read address1 to be $v0 and read address2 to be $a0
+            imm_ext = `IMM_SIGN_EXT; sha_ext = `SHA_SIGN_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
+
+            // address1 = $v0 & address2 = $a0
             `F_SYSCAL: begin
               ra1 = `REG_V0; ra2 = `REG_A0; wa = rd; reg_wen = `WREN;
               imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
@@ -85,9 +83,9 @@ module DECODE
           endcase
         end
 
-        // I-type instruction.
+        // I-type
 
-        // Cases where we sign extend
+        // Sign extend
         `ADDI: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
@@ -123,54 +121,49 @@ module DECODE
           pc_src  = `PC_SRC_NEXT;  alu_op  = `F_XOR;
         end
 
-        // Cases where we don't sign extend
+        // No Sign extend
         `ADDIU: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADD;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADDU;
         end
 
         `SLTIU: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_SLT;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_SLTU;
         end
 
         `BEQ, `BNE: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_BRCH;  alu_op  = `F_SUB;
+          pc_src  = `PC_SRC_BRCH;  alu_op  = `F_SUBU;
         end
 
         `LW: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_READ;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_MEM;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADD;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADDU;
         end
 
         `SW: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WDIS;
           imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_WRITE;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_MEM;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADD;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADDU;
         end
 
-        // J-type instructions
+        // J-type
         `J_: begin
-          // Nothing matters except for pc_src
           wa = rd; ra1 = `W_REG'b0; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
           pc_src  = `PC_SRC_JUMP;  alu_op  = `F_ADD;
         end
-
-
-
-        //Is default NOP? Not sure what to do for NOP.
 
         default: begin
           wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WDIS;
