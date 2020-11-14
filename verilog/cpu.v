@@ -105,8 +105,16 @@ module SINGLE_CYCLE_CPU
     always @* begin
      case (alu_src)//MUX for B in ALU
        `ALU_SRC_REG: begin ALU_in = rd2; end
-       `ALU_SRC_IMM: begin ALU_in = {{`IMM_SIGN_EXT{imm_ext}}, imm}; end
-       `ALU_SRC_SHA: begin ALU_in = {{`SHA_SIGN_EXT{sha_ext}}, sha}; end
+       `ALU_SRC_IMM: begin
+       $display("IMM: ISSS  = %x",imm);
+       $display("IMMEXT: ISSS  = %x",imm_ext);
+       $display("IMM_SIGN_EXT: ISSS  = %x",`IMM_SIGN_EXT);
+       ALU_in = {{`IMM_SIGN_EXT{imm_ext}}, imm}; end
+       `ALU_SRC_SHA: begin
+       $display("SHA: ISSS  = %x",sha);
+       $display("SHAEXT: ISSS  = %x",sha_ext);
+       ALU_in = {{`SHA_SIGN_EXT{sha_ext}}, sha}; end
+
        default: ;
      endcase
      end

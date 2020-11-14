@@ -60,13 +60,16 @@ module DECODE
             // `F_SRL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRL; sha_ext = SHA_ZERO_EXT; end
             // `F_SRA: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRA; sha_ext = SHA_SIGN_EXT; end
 
-            `F_SLL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SLL; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
-            imm_ext = `IMM_SIGN_EXT; sha_ext = `SHA_SIGN_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
+            `F_SLL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SLL; wa = rd; ra1 = rt; ra2 = rs; reg_wen = `WREN;
+            imm_ext = `IMM_ZERO_EXT; sha_ext = `SHA_ZERO_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
 
-            `F_SRL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRL; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            `F_SRL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRL; wa = rd; ra1 = rt; ra2 = rs; reg_wen = `WREN;
             imm_ext = `IMM_SIGN_EXT; sha_ext = `SHA_ZERO_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
 
-            `F_SRA: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRA; wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+            `F_SRA: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRA; wa = rd; ra1 = rt; ra2 = rs; reg_wen = `WREN;
+            imm_ext = `IMM_SIGN_EXT; sha_ext = `SHA_SIGN_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
+
+            `F_SRAV: begin alu_src = `ALU_SRC_REG; alu_op = `F_SRA; wa = rd; ra1 = rt; ra2 = rs; reg_wen = `WREN;
             imm_ext = `IMM_SIGN_EXT; sha_ext = `SHA_SIGN_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
 
             // address1 = $v0 & address2 = $a0
