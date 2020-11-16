@@ -17,7 +17,7 @@ module DECODE
   output reg [`W_SHA_EXT-1:0] sha_ext,//Sign extend for shamt
   output reg [`W_SHAMT-1:0]   sha,     // Shift Amount
   // Jump Address
-  output reg [`W_JADDR-1:0]   addr,    // Jump Addr Field
+  output reg [`W_JADDR-1:0]   jump_addr,    // Jump Addr Field
   // ALU Control
   output reg [`W_FUNCT-1:0]   alu_op,  // ALU OP
   // Muxing
@@ -43,6 +43,8 @@ module DECODE
       /* verilator lint_off STMTDLY */
       #1 // Delay Slightly
       $display("op = %x rs = %x rt = %x rd = %x imm = %x addr = %x",inst[`FLD_OPCODE],rs,rt,rd,imm,addr);
+      $display("inst = %x",inst);
+
       /* verilator lint_on STMTDLY */
   end
 
@@ -55,10 +57,6 @@ module DECODE
         // R-type
         `OP_ZERO: begin
           case(inst[`FLD_FUNCT])
-
-            // `F_SLL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SLL; sha_ext = SHA_SIGN_EXT; end
-            // `F_SRL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRL; sha_ext = SHA_ZERO_EXT; end
-            // `F_SRA: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRA; sha_ext = SHA_SIGN_EXT; end
 
             `F_SLL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SLL; wa = rd; ra1 = rt; ra2 = rs; reg_wen = `WREN;
             imm_ext = `IMM_ZERO_EXT; sha_ext = `SHA_ZERO_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
@@ -162,10 +160,10 @@ module DECODE
 
         // J-type
         `J_: begin
-          wa = rd; ra1 = `W_REG'b0; ra2 = rt; reg_wen = `WREN;
-          imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
-          alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_JUMP;  alu_op  = `F_ADD;
+        wa = rd; ra1 = `W_REG'b0; ra2 = rt; reg_wen = `WREN;
+        imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
+        alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
+        pc_src  = `PC_SRC_JUMP;  alu_op  = `F_ADD; jump_addr = addr;
         end
 
         default: begin

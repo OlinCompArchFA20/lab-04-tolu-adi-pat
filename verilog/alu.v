@@ -9,8 +9,9 @@ module ALU
   output reg overflow, // 1 if overflow, 0 if not
   output reg isZero);
 
-  reg temp;
+  // reg temp;
   // behavioral ALU
+
   always @* begin
     case(alu_op)
     `F_ADD: begin R = A + B; end // add
@@ -48,4 +49,18 @@ module ALU
     default: ;
     endcase
     end
+
+    reg temp;
+    always @*
+    begin
+    if (R == 1'b0)
+         temp = 1'b1;
+    else
+        temp = 1'b0;
+    end
+
+    assign isZero = temp;
+
+    // if (R == 0)  assign isZero = 1;
+
 endmodule

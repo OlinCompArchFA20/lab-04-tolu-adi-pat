@@ -80,11 +80,11 @@ module SINGLE_CYCLE_CPU
    // initializing PC and instruction components
 
 
-   FETCH instruction_fetch(.clk(clk), .rst(rst), .pc_src(pc_src), .branch_ctrl(branch_ctrl), .reg_addr(reg_addr), .jump_addr(jump_addr), .imm_addr(imm_addr), .pc_next(PC));
+   FETCH instruction_fetch(.clk(clk), .rst(rst), .pc_src(pc_src), .branch_ctrl(isZero), .reg_addr(reg_addr), .jump_addr(addr), .imm_addr(imm_addr), .pc_next(PC));
 
    // this memory serves as both instruction and processor memory
    MEMORY stage_MEMORY(.clk(clk),.rst(rst),.PC(PC),.instruction(instruction), .mem_cmd(mem_cmd),.data_in(rd2),.data_addr(ALU_out),.data_out(mem_out));
-   DECODE instruction_decode(.inst(instruction), .wa(wa), .ra1(rs), .ra2(rt), .reg_wen(writeRegEnable), .imm_ext(imm_ext), .imm(imm), .sha_ext(sha_ext), .sha(sha), .addr(addr), .alu_op(alu_opcode),.pc_src(pc_src), .mem_cmd(mem_cmd), .alu_src(alu_src), .reg_src(memToReg));
+   DECODE instruction_decode(.inst(instruction), .wa(wa), .ra1(rs), .ra2(rt), .reg_wen(writeRegEnable), .imm_ext(imm_ext), .imm(imm), .sha_ext(sha_ext), .sha(sha), .jump_addr(addr), .alu_op(alu_opcode),.pc_src(pc_src), .mem_cmd(mem_cmd), .alu_src(alu_src), .reg_src(memToReg));
 
 
    // initializing processor components
@@ -106,13 +106,13 @@ module SINGLE_CYCLE_CPU
      case (alu_src)//MUX for B in ALU
        `ALU_SRC_REG: begin ALU_in = rd2; end
        `ALU_SRC_IMM: begin
-       $display("IMM: ISSS  = %x",imm);
-       $display("IMMEXT: ISSS  = %x",imm_ext);
-       $display("IMM_SIGN_EXT: ISSS  = %x",`IMM_SIGN_EXT);
+       // $display("IMM: ISSS  = %x",imm);
+       // $display("IMMEXT: ISSS  = %x",imm_ext);
+       // $display("IMM_SIGN_EXT: ISSS  = %x",`IMM_SIGN_EXT);
        ALU_in = {{`IMM_SIGN_EXT{imm_ext}}, imm}; end
        `ALU_SRC_SHA: begin
-       $display("SHA: ISSS  = %x",sha);
-       $display("SHAEXT: ISSS  = %x",sha_ext);
+       // $display("SHA: ISSS  = %x",sha);
+       // $display("SHAEXT: ISSS  = %x",sha_ext);
        ALU_in = {{`SHA_SIGN_EXT{sha_ext}}, sha}; end
 
        default: ;

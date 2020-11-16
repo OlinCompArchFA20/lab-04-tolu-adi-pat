@@ -19,13 +19,11 @@ module FETCH
     end
     else begin
       case(pc_src)
-        // Make sure you're very careful here!!
-        // TODO: fix handle all pc src cases
-        // `PC_SRC_NEXT begin pc_next <= pc_next + `W_CPU'b100; end
-        // `PC_SRC_JUMP begin pc_next <= jump_addr;end
-        // `PC_SRC_BRCH begin pc_next <= imm_addr; end
-        // `PC_SRC_REGF begin pc_next <= reg_addr; end
-        // default: pc_next <= pc_next + `W_CPU'b100;
+        `PC_SRC_NEXT: begin pc_next = pc_next + `W_CPU'b100; end
+        `PC_SRC_JUMP: begin pc_next = jump_addr; end
+        `PC_SRC_BRCH: begin  if (branch_ctrl == 1)  pc_next = imm_addr;
+                     else pc_next = pc_next + 4; end
+        `PC_SRC_REGF: begin pc_next = reg_addr; end
         default: pc_next <= pc_next + 4;
       endcase
       if (`DEBUG_PC && ~rst)

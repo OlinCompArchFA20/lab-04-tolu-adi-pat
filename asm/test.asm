@@ -1,16 +1,32 @@
+.text
+la $t0 len
+lw $a0, 0($t0)
+la $a1 fibs
 li $t0 1
-li $t1 2
-add  $t2, $t0, $t1
-sll  $t3, $t2, 4
-srav $t4, $t3, $t1
-xori $t5, $t4, 15
-sub  $t6, $t5, $t2
-or   $t7, $t6, $t3
-li   $t0, -8
-add  $t1, $t7, $t0
-srl  $t2, $t1, 2
-addi $a0, $t2, 32
-li $v0 1
-syscall
-li $v0 10
-syscall
+sw $t0, 0($a1)
+li $t1 1
+sw $t1, 4($a1)
+li $t3 2
+
+loop:
+    add $t2, $t0, $t1
+    sll $t4, $t3, 2
+    add $t4, $t4, $a1
+    sw  $t2, 0($t4)
+    beq $t3,$a0,done
+    move $t0, $t1
+    move $t1, $t2
+    addi $t3, $t3, 1
+    j loop
+
+done:
+    sll $t4, $a0, 2
+    add $t4, $t4, $a1
+    lw  $a0, 0($t4)
+    addi $v0,$zero,1      #set syscall type to print int
+    SYSCALL               #print $a0
+    addi $v0,$zero,10     #set syscall type to exit
+    SYSCALL               #exit
+.data
+fibs: .word 0 : 100
+len:  .word 20
