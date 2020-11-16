@@ -21,7 +21,7 @@ module SINGLE_CYCLE_CPU
    // PC FETCH Wires
    wire [`W_CPU-1:0] PC; // program counter wire
    wire [`W_CPU-1:0] data_in;
-   wire [`W_EN-1:0] branch_ctrl;
+   reg [`W_EN-1:0] branch_ctrl;
 
 
    //wire jump;//pcsrc is jump
@@ -80,7 +80,7 @@ module SINGLE_CYCLE_CPU
    // initializing PC and instruction components
 
 
-   FETCH instruction_fetch(.clk(clk), .rst(rst), .pc_src(pc_src), .branch_ctrl(isZero), .reg_addr(reg_addr), .jump_addr(addr), .imm_addr(imm_addr), .pc_next(PC));
+   FETCH instruction_fetch(.clk(clk), .rst(rst), .pc_src(pc_src), .branch_ctrl(branch_ctrl), .reg_addr(reg_addr), .jump_addr(addr), .imm_addr(imm), .pc_next(PC));
 
    // this memory serves as both instruction and processor memory
    MEMORY stage_MEMORY(.clk(clk),.rst(rst),.PC(PC),.instruction(instruction), .mem_cmd(mem_cmd),.data_in(rd2),.data_addr(ALU_out),.data_out(mem_out));
@@ -101,6 +101,17 @@ module SINGLE_CYCLE_CPU
       default: ;
     endcase
     end
+
+
+    // branch conditional setting
+    always @* begin
+    case (instruction[`FLD_OPCODE])
+    `BEQ: begin branch_ctrl = isZero; end
+    `BNE: begin branch_ctrl = ~isZero; end
+    default: ;
+    endcase
+    end
+
 
     always @* begin
      case (alu_src)//MUX for B in ALU
