@@ -110,29 +110,11 @@ module SINGLE_CYCLE_CPU
      case (alu_src)//MUX for B in ALU
        `ALU_SRC_REG: begin ALU_in = rd2; end
        `ALU_SRC_IMM: begin
-       // $display("IMM: ISSS  = %x",imm);
-       // $display("IMMEXT: ISSS  = %x",imm_ext);
-       // $display("IMM_SIGN_EXT: ISSS  = %x",`IMM_SIGN_EXT);
-       // ALU_in = {{{(imm[4]){imm_ext}}, imm}; end
-       case (imm_ext)
-        `IMM_SIGN_EXT: begin ALU_in = {{(`W_CPU-`W_IMM){imm[`W_IMM-1]}}, imm}; end
-        `IMM_ZERO_EXT: begin ALU_in = `W_CPU'(imm); end
-        default: ;
-        endcase
+         ALU_in = {{(`W_CPU-`W_IMM){imm[`W_IMM-1]}}, imm};
        end
        `ALU_SRC_SHA: begin
-       // $display("SHA: ISSS  = %x",sha);
-       // $display("SHAEXT: ISSS  = %x",sha_ext);
-       // ALU_in = {{16{sha[4]}}, sha}; end
-       //ALU_in = {{16{sha[4]}}, sha}; end
-       case (sha_ext)
-       `SHA_SIGN_EXT: begin ALU_in =  {{(`W_CPU-`W_SHAMT){sha[`W_SHAMT-1]}}, sha}; end
-       `SHA_ZERO_EXT: begin ALU_in = `W_CPU'(sha); end
-       default : ;
-       endcase
+         ALU_in = {{(`W_CPU-`W_SHAMT){sha[`W_SHAMT-1]}}, sha};
        end
-
-       default: ;
      endcase
      end
 
