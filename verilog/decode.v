@@ -143,10 +143,10 @@ module DECODE
         end
 
         `BEQ, `BNE: begin
-          wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
+          wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WDIS;
           imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_BRCH;  alu_op  = `F_SUBU;
+          pc_src  = `PC_SRC_BRCH;  alu_op  = `F_SUB;
         end
 
         `LW: begin
