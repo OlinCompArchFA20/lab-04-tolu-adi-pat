@@ -6,12 +6,6 @@
 
 `timescale 1ns / 1ps
 
-
-/*
-Questions: TODO:
-imm_ext? mux?
-*/
-
 module SINGLE_CYCLE_CPU
   (input clk,
    input rst);
@@ -31,7 +25,7 @@ module SINGLE_CYCLE_CPU
 
    wire [`W_PC_SRC-1:0] pc_src;// mux for jump select
    wire [`W_CPU-1:0] reg_addr;
-   wire [`W_JADDR-1:0] jump_addr;//target address
+   // wire [`W_JADDR-1:0] jump_addr;//target address
    wire [`W_IMM-1:0] imm_addr;//imm address for branching
    wire [`W_JADDR-1:0] addr; // jump addr field for branching
 
@@ -44,7 +38,6 @@ module SINGLE_CYCLE_CPU
    wire [`W_OPCODE-1:0] alu_opcode;
    wire [`W_CPU-1:0] instruction; // your 32 bit wide instruction that comes out of memory
    wire [`W_REG_SRC-1:0] memToReg;
-  // wire [`W_CPU-`W_IMM -1: 0] imm_ext_16;
 
 
    // processor Register wires
@@ -121,12 +114,23 @@ module SINGLE_CYCLE_CPU
        // $display("IMMEXT: ISSS  = %x",imm_ext);
        // $display("IMM_SIGN_EXT: ISSS  = %x",`IMM_SIGN_EXT);
        // ALU_in = {{{(imm[4]){imm_ext}}, imm}; end
-       ALU_in = {{16{imm[4]}}, imm}; end
+       case (imm_ext)
+        `IMM_SIGN_EXT: begin ALU_in = {{(`W_CPU-`W_IMM){imm[`W_IMM-1]}}, imm}; end
+        `IMM_ZERO_EXT: begin ALU_in = `W_CPU'(imm); end
+        default: ;
+        endcase
+       end
        `ALU_SRC_SHA: begin
        // $display("SHA: ISSS  = %x",sha);
        // $display("SHAEXT: ISSS  = %x",sha_ext);
-       ALU_in = {{16{sha[4]}}, sha}; end
+       // ALU_in = {{16{sha[4]}}, sha}; end
        //ALU_in = {{16{sha[4]}}, sha}; end
+       case (sha_ext)
+       `SHA_SIGN_EXT: begin ALU_in =  {{(`W_CPU-`W_SHAMT){sha[`W_SHAMT-1]}}, sha}; end
+       `SHA_ZERO_EXT: begin ALU_in = `W_CPU'(sha); end
+       default : ;
+       endcase
+       end
 
        default: ;
      endcase

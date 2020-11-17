@@ -23,8 +23,8 @@ module FETCH
         `PC_SRC_JUMP: begin pc_next = {pc_next[`PC_UPPER], jump_addr, `W_WORD'b0}; $display("JUMP = %x",jump_addr); end
 
 
-        // `PC_SRC_BRCH: begin  if (branch_ctrl == 1)  pc_next = pc_next + 4 + {14'b{imm_add[15]}, imm_addr, 2'b0};
-        //              else pc_next = pc_next + 4; end
+        `PC_SRC_BRCH: begin  if (branch_ctrl == 1)  pc_next = pc_next + 4 + {{(14){imm_addr[`W_IMM-1]}}, imm_addr, 2'b0};
+                      else pc_next = pc_next + 4; end
         //`PC_SRC_REGF: pc_next = reg_addr;
         default: pc_next <= pc_next + 4;
       endcase
