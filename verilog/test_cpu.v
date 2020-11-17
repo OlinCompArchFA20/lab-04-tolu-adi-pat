@@ -51,7 +51,7 @@ module cpu_test ();
     $readmemh(mem_inst_fn, cpu.stage_MEMORY.mem, 0, 2047);
     if (init_data)
       $readmemh(mem_data_fn, cpu.stage_MEMORY.mem, 2048,4095);
-    
+
     // Dump waveforms to file
     // Note: arrays (e.g. memory) are not dumped by default
     $dumpfile(vcd_dump_fn);
@@ -61,14 +61,14 @@ module cpu_test ();
     reset = 0; #5;
     reset = 1; #10;
     reset = 0; #10;
-      
+
     // End execution after some time delay - adjust to match your program
     // or use a smarter approach like looking for an exit syscall or the
     // PC to be the value of the last instruction in your program.
     /* verilator lint_off STMTDLY */
-    #2000
+    //#2000
     /* verilator lint_on STMTDLY */
-    $display("Are you sure you should be running this long?");
-    $finish();
+    //$display("Are you sure you should be running this long?");
+    //$finish();
     end
 endmodule
