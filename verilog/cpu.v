@@ -120,11 +120,13 @@ module SINGLE_CYCLE_CPU
        // $display("IMM: ISSS  = %x",imm);
        // $display("IMMEXT: ISSS  = %x",imm_ext);
        // $display("IMM_SIGN_EXT: ISSS  = %x",`IMM_SIGN_EXT);
-       ALU_in = {{`IMM_SIGN_EXT{imm_ext}}, imm}; end
+       // ALU_in = {{{(imm[4]){imm_ext}}, imm}; end
+       ALU_in = {{16{imm[4]}}, imm}; end
        `ALU_SRC_SHA: begin
        // $display("SHA: ISSS  = %x",sha);
        // $display("SHAEXT: ISSS  = %x",sha_ext);
-       ALU_in = {{`SHA_SIGN_EXT{sha_ext}}, sha}; end
+       ALU_in = {{16{sha[4]}}, sha}; end
+       //ALU_in = {{16{sha[4]}}, sha}; end
 
        default: ;
      endcase

@@ -59,28 +59,28 @@ module DECODE
           case(inst[`FLD_FUNCT])
 
             `F_SLL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SLL; wa = rd; ra1 = rt; ra2 = rs; reg_wen = `WREN;
-            imm_ext = `IMM_ZERO_EXT; sha_ext = `SHA_ZERO_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
+            imm_ext = `IMM_ZERO_EXT; sha_ext = `SHA_ZERO_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT;jump_addr = addr; end
 
             `F_SRL: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRL; wa = rd; ra1 = rt; ra2 = rs; reg_wen = `WREN;
-            imm_ext = `IMM_SIGN_EXT; sha_ext = `SHA_ZERO_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
+            imm_ext = `IMM_SIGN_EXT; sha_ext = `SHA_ZERO_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT;jump_addr = addr; end
 
             `F_SRA: begin alu_src = `ALU_SRC_SHA; alu_op = `F_SRA; wa = rd; ra1 = rt; ra2 = rs; reg_wen = `WREN;
-            imm_ext = `IMM_SIGN_EXT; sha_ext = `SHA_SIGN_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
+            imm_ext = `IMM_SIGN_EXT; sha_ext = `SHA_SIGN_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT;jump_addr = addr; end
 
             `F_SRAV: begin alu_src = `ALU_SRC_REG; alu_op = `F_SRA; wa = rd; ra1 = rt; ra2 = rs; reg_wen = `WREN;
-            imm_ext = `IMM_SIGN_EXT; sha_ext = `SHA_SIGN_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; end
+            imm_ext = `IMM_SIGN_EXT; sha_ext = `SHA_SIGN_EXT; mem_cmd = `MEM_NOP; reg_src = `REG_SRC_ALU; pc_src  = `PC_SRC_NEXT; jump_addr = addr;end
 
             // address1 = $v0 & address2 = $a0
             `F_SYSCAL: begin
               ra1 = `REG_V0; ra2 = `REG_A0; wa = rd; reg_wen = `WREN;
               imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
               alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
-              pc_src  = `PC_SRC_NEXT;  alu_op  = inst[`FLD_FUNCT];
+              pc_src  = `PC_SRC_NEXT;  alu_op  = inst[`FLD_FUNCT];jump_addr = addr;
             end
             default: begin wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WREN;
             imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
             alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
-            pc_src  = `PC_SRC_NEXT;  alu_op  = inst[`FLD_FUNCT]; end
+            pc_src  = `PC_SRC_NEXT;  alu_op  = inst[`FLD_FUNCT];jump_addr = addr; end
           endcase
         end
 
@@ -91,35 +91,35 @@ module DECODE
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADD;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADD;jump_addr = addr;
         end
 
         `ANDI: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_AND;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_AND;jump_addr = addr;
         end
 
         `ORI: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_OR;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_OR;jump_addr = addr;
         end
 
         `SLTI: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_SLT;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_SLT;jump_addr = addr;
         end
 
         `XORI: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_XOR;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_XOR;jump_addr = addr;
         end
 
         // No Sign extend
@@ -127,50 +127,50 @@ module DECODE
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADDU;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADDU;jump_addr = addr;
         end
 
         `SLTIU: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_SLTU;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_SLTU;jump_addr = addr;
         end
 
         `BEQ, `BNE: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_BRCH;  alu_op  = `F_SUBU;
+          pc_src  = `PC_SRC_BRCH;  alu_op  = `F_SUBU;jump_addr = addr;
         end
 
         `LW: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WREN;
           imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_READ;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_MEM;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADDU;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADDU;jump_addr = addr;
         end
 
         `SW: begin
           wa = rt; ra1 = rs; ra2 = rt; reg_wen = `WDIS;
           imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_WRITE;
           alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_MEM;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADDU;
+          pc_src  = `PC_SRC_NEXT;  alu_op  = `F_ADDU;jump_addr = addr;
         end
 
         // J-type
         `J_: begin
-        wa = rd; ra1 = `W_REG'b0; ra2 = rt; reg_wen = `WREN;
-        imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
-        alu_src = `ALU_SRC_IMM;  reg_src = `REG_SRC_ALU;
-        pc_src  = `PC_SRC_JUMP;  alu_op  = `F_ADD; jump_addr = addr;
+          wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WDIS;
+          imm_ext = `IMM_SIGN_EXT; mem_cmd = `MEM_NOP;
+          alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
+          pc_src  = `PC_SRC_JUMP;  alu_op = inst[`FLD_FUNCT]; jump_addr = 26'b00000000000000000000000010;
         end
 
         default: begin
           wa = rd; ra1 = rs; ra2 = rt; reg_wen = `WDIS;
           imm_ext = `IMM_ZERO_EXT; mem_cmd = `MEM_NOP;
           alu_src = `ALU_SRC_REG;  reg_src = `REG_SRC_ALU;
-          pc_src  = `PC_SRC_NEXT;  alu_op  = inst[`FLD_FUNCT]; end
+          pc_src  = `PC_SRC_NEXT;  alu_op  = inst[`FLD_FUNCT]; jump_addr = addr; end
       endcase
     end
     endmodule

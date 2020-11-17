@@ -19,13 +19,13 @@ module FETCH
     end
     else begin
       case(pc_src)
-        `PC_SRC_NEXT: begin pc_next = pc_next + `W_CPU'b100; end
-        `PC_SRC_JUMP: begin pc_next = pc_next + 4; pc_next = {pc_next[`PC_UPPER], jump_addr, `W_WORD'b0}; end
+        //`PC_SRC_NEXT: begin pc_next = pc_next + `W_CPU'b100; end
+        `PC_SRC_JUMP: begin pc_next = {pc_next[`PC_UPPER], jump_addr, `W_WORD'b0}; $display("JUMP = %x",jump_addr); end
 
 
         // `PC_SRC_BRCH: begin  if (branch_ctrl == 1)  pc_next = pc_next + 4 + {14'b{imm_add[15]}, imm_addr, 2'b0};
         //              else pc_next = pc_next + 4; end
-        `PC_SRC_REGF: begin pc_next = reg_addr; end
+        //`PC_SRC_REGF: pc_next = reg_addr;
         default: pc_next <= pc_next + 4;
       endcase
       if (`DEBUG_PC && ~rst)
