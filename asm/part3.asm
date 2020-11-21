@@ -1,5 +1,5 @@
 .text
-li $t0 5
+la $t0 len
 lw $a0, 0($t0)
 la $a1 fibs
 li $t0 1
