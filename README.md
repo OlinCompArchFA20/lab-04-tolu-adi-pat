@@ -124,4 +124,6 @@ bgez, bgezal, bgtz, blez, bletz, bltzal.
   CPU, first consider whether or not you want to build it behaviorally, but if
   you still want to, consider writing some python/etc to generate verilog for
   you.
+  
+  Finished
 
